@@ -7,7 +7,7 @@ test(
 
 	'Test simple operation: get,set,clear,replace,add,append', function()
 	{
-		$kt = kt('http://martibox:1978');
+		$kt = kt('http://localhost:1978');
 		ok( $kt->clear );
 		isnull( $kt->replace('a','academy') );
 		isnull( $kt->get('a') );
