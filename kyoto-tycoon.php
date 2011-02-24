@@ -19,9 +19,16 @@ namespace KyotoTycoon
 	class Exception extends \RuntimeException	{}
 	class ConnectionException extends Exception
 	{
-		function __construct( $uri, $code, $msg )
+		function __construct( $uri, $msg )
 		{
-			parent::__construct( "Could'nt connect to KyotoTycoon server {$uri}. {$msg}", $code );
+			parent::__construct( "Could'nt connect to KyotoTycoon server {$uri}. {$msg}", 1 );
+		}
+	}
+	class InconsistencyException extends Exception
+	{
+		function __construct( $uri, $msg )
+		{
+			parent::__construct( "(Un)existing record was detected on server {$uri}. {$msg}", 2 );
 		}
 	}
 
@@ -65,20 +72,20 @@ namespace KyotoTycoon
 			return $this->rpc( 'replace', compact('DB','key','value','xt'), null );
 		}
 
-		private function socket( $close = false )
+		private function curl()
 		{
-			assert('is_bool($close)');
-			static $handle = null;
-
-			if( is_null($handle) or $close )
+			static $curl = null;
+			if( is_null($curl) )
 			{
-				if( ! $handle = @fsockopen( $this->host, $this->port, $errno, $errstr ) )
-					throw new ConnectionException( $this->uri, $errno, $errstr );
-				if( $this->timeout )
-					stream_set_timeout( $handle, $this->timeout );
+				$curl = curl_init();
+				curl_setopt_array($curl, array(
+					CURLOPT_HTTPHEADER => array('Content-Type: text/tab-separated-values; colenc=B'),
+					CURLOPT_POST => true,
+					CURLOPT_RETURNTRANSFER => true,
+					CURLOPT_CONNECTTIMEOUT => $this->timeout,
+					CURLOPT_TIMEOUT => $this->keepalive ));
 			}
-
-			return $handle;
+			return $curl;
 		}
 
 		private function rpc( $cmd, $data = null, $when_ok = null )
@@ -88,66 +95,28 @@ namespace KyotoTycoon
 			assert('is_null($data) or count($data)==count(array_filter($data,"is_string"))');
 			assert('is_callable($when_ok) or is_null($when_ok)');
 
-			$data = is_array($data) ? http_build_query($data) : '';
-			$buffer = sprintf( "POST /rpc/%s HTTP/1.1\r\nHost: %s:%s\r\nConnection: keep-alive\r\nKeep-Alive: 30\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %s\r\n\r\n%s\r\n",
-				$cmd, $this->host, $this->port, strlen($data), $data );
-			$size = strlen($buffer);
+			if( is_array($data) )
+				$post = implode("\r\n", array_map( function($k,$v) {
+					return sprintf("%s\t%s", base64_encode($k), base64_encode($v));
+				}, array_keys($data), $data ));
+			else
+				$post = '';
 			unset($data);
-var_dump( 'socket:',$this->socket(), stream_context_get_options($this->socket()) );
-			for( $offset = $written = 0; $offset < $size; $offset += $written )
-			{
-				$written = fputs( $this->socket(), substr($buffer,$offset) );
-				if( ! $written )
-					break;
-			}
 
-			var_dump( 'result:' );
-			unset($size,$total,$written);
-			while( $line = fgets($this->socket()) )
-				echo $line;
+			curl_setopt($this->curl(), CURLOPT_URL, "{$this->uri}/rpc/{$cmd}" );
+			curl_setopt($this->curl(), CURLOPT_POSTFIELDS, $post);
+			if( is_string($data = curl_exec($this->curl())) and $data = explode("\r\n",trim($data)) )
+				$data = array_combine(
+					array_map( function($k) { return substr($k,0,strpos($k,"\t")); }, $data ),
+					array_map( function($v) { return substr($v,strpos($v,"\t")); }, $data ) );
 
-			fflush($this->socket());
-
-			return true;
-/*
-			// get HTTP resonse code
-			if( ! ($line = fgets($this->socket())) or ! is_numeric($code = substr($line,9,3)) )
-			{
-				var_dump( __LINE__, $line );//, $code );
-				throw new ProtocolException($this->uri);
-			}
-
-			var_dump( __LINE__, $line, $code );
-
-			// skip header and get content-size
-			$size = 0; $buffer = ''; $data = array();
-			while( "\r\n" != ($line = fgets($this->socket())) )
-			{
-				var_dump( __LINE__, $line );
-				if( substr($line,0,16)=='Content-Length: ' ) $size = (integer)substr($line,16);
-			}
-			var_dump( __LINE__, $line, $size, feof($this->socket()) );
-
-			while( $size and ($line = fgets($this->socket()) or $size -= strlen($line)) )
-				$data[ substr($line,0,strpos($line,"\t")) ] = substr($line,strpos($line,"\t"));
-
-			var_dump('============',fgets($this->socket()));
-
-			if( ! feof($this->socket()) and "\r\n" != fgets($this->socket()) )
-				throw new ProtocolException($this->uri);
-
-			if( $when_ok ) call_user_func($when_ok,$data);
-
-			//$this->socket(true);
-
-			var_dump( __LINE__, $data, feof($this->socket()) );
-
-			switch( (integer)$code )
+			switch( curl_getinfo($this->curl(),CURLINFO_HTTP_CODE) )
 			{
 			case 200: if( $when_ok ) call_user_func( $when_ok, $data ); return true;
+			case 450: throw new InconsistencyException($this->uri,$data['ERROR']);
 			default: throw new ProtocolException($this->uri);
 			}
-*/
+
 		}
 	}
 
