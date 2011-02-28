@@ -78,7 +78,7 @@ test(
 	{
 		$kt = kt('http://martibox:1978');
 		ok( $kt->clear );
-		isnull( $kt->replace('a','academy') );
+		except( function() use($kt) {$kt->replace('a','academy');}, 'KyotoTycoon\InconsistencyException' );
 		isnull( $kt->get('a') );
 		ok( $kt->add('a', 'alien') );
 		is( $kt->get('a'), 'alien' );

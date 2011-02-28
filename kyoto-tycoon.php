@@ -71,6 +71,20 @@ namespace KyotoTycoon
 		}
 
 		// }}}
+		// {{{ get()
+
+		function get( $key, &$xt = null )
+		{
+			assert('is_string($key)');
+			if( $this->DB ) $DB = $this->DB;
+			if( ! $xt ) unset($xt);
+			return $this->rpc( 'get', compact('DB','key'), function($result) use(&$xt) {
+				if( isset($result['xt']) ) $xt = $result['xt'];
+				return $result['value'];
+			} );
+		}
+
+		// }}}
 		// {{{ replace()
 
 		function replace( $key, $value, $xt = null )
@@ -119,14 +133,16 @@ namespace KyotoTycoon
 
 			curl_setopt($this->curl(), CURLOPT_URL, "{$this->uri}/rpc/{$cmd}" );
 			curl_setopt($this->curl(), CURLOPT_POSTFIELDS, $post);
-			if( is_string($data = curl_exec($this->curl())) and $data = explode("\r\n",trim($data)) )
+			if( is_string($data = curl_exec($this->curl())) and $data and $data = explode("\r\n",trim($data)) )
 				$data = array_combine(
 					array_map( function($k) { return substr($k,0,strpos($k,"\t")); }, $data ),
-					array_map( function($v) { return substr($v,strpos($v,"\t")); }, $data ) );
+					array_map( function($v) { return substr($v,strpos($v,"\t")+1); }, $data ) );
+			else
+				$data = array();
 
 			switch( curl_getinfo($this->curl(),CURLINFO_HTTP_CODE) )
 			{
-			case 200: if( $when_ok ) call_user_func( $when_ok, $data ); return true;
+			case 200: if( $when_ok ) return call_user_func( $when_ok, $data ); else return true;
 			case 450: throw new InconsistencyException($this->uri,$data['ERROR']);
 			default: throw new ProtocolException($this->uri);
 			}
