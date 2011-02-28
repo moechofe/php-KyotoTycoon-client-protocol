@@ -15,6 +15,7 @@ namespace
 
 namespace KyotoTycoon
 {
+	// {{{ Exception, ConnectionException, InconsistencyException
 
 	class Exception extends \RuntimeException	{}
 	class ConnectionException extends Exception
@@ -32,8 +33,12 @@ namespace KyotoTycoon
 		}
 	}
 
+	// }}}
+
 	final class API
 	{
+		// {{{ $keepalive, $timeout, $uri, $host, $post, $base, __construct()
+
 		private $keepalive = 30;
 		private $timeout = 3;
 
@@ -51,6 +56,9 @@ namespace KyotoTycoon
 			$this->base = trim( parse_url( $uri, PHP_URL_PATH ), '/' );
 		}
 
+		// }}}
+		// {{{ clear
+
 		function __get( $property )
 		{
 			assert('preg_match("/^[\w_]+$/",$property)');
@@ -62,6 +70,9 @@ namespace KyotoTycoon
 			}
 		}
 
+		// }}}
+		// {{{ replace()
+
 		function replace( $key, $value, $xt = null )
 		{
 			assert('is_string($key)');
@@ -71,6 +82,9 @@ namespace KyotoTycoon
 			if( ! $xt ) unset($xt);
 			return $this->rpc( 'replace', compact('DB','key','value','xt'), null );
 		}
+
+		// }}}
+		// {{{ curl(), rpc()
 
 		private function curl()
 		{
@@ -116,8 +130,9 @@ namespace KyotoTycoon
 			case 450: throw new InconsistencyException($this->uri,$data['ERROR']);
 			default: throw new ProtocolException($this->uri);
 			}
-
 		}
+
+		// }}}
 	}
 
 }
