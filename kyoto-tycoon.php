@@ -1,5 +1,4 @@
 <?php
-
 declare(encoding='UTF-8');
 
 namespace
@@ -15,24 +14,34 @@ namespace
 
 namespace KyotoTycoon
 {
-	// {{{ Exception, ConnectionException, InconsistencyException
+	// {{{ ConnectionException, InconsistencyException, ProtocolException
 
-	class Exception extends \RuntimeException	{}
-	class ConnectionException extends Exception
+	/**
+	 * Thrown when the connection to the KyotoTycoon cannot be established.
+	 */
+	class ConnectionException extends \RuntimeException
 	{
 		function __construct( $uri, $msg )
 		{
 			parent::__construct( "Could'nt connect to KyotoTycoon server {$uri}. {$msg}", 1 );
 		}
 	}
-	class InconsistencyException extends Exception
+
+	/**
+	 * Thrown when an operation is asked about a record that didn't respect all the needs.
+	 */
+	class InconsistencyException extends \OutOfBoundsException
 	{
 		function __construct( $uri, $msg )
 		{
 			parent::__construct( "(Un)existing record was detected on server {$uri}. {$msg}", 2 );
 		}
 	}
-	class ProtocolException extends Exception
+
+	/**
+	 * Throw if the protocol isn't well implemented for an operation.
+	 */
+	class ProtocolException extends \DomainException
 	{
 		function __construct( $uri )
 		{
@@ -202,6 +211,10 @@ namespace KyotoTycoon
 		// }}}
 		// {{{ curl(), rpc()
 
+		/**
+		 * Return a curl resource identifier
+		 * KyotoTycoon use a keep-alive connection by default.
+		 */
 		private function curl()
 		{
 			static $curl = null;
@@ -218,6 +231,17 @@ namespace KyotoTycoon
 			return $curl;
 		}
 
+		/**
+		 * Send an RPC command to a KyotoTycoon server.
+		 * Params:
+		 *   string $cmd = The command.
+		 *   array,null $data = Lexical indexed array containing the input parameters.
+		 *   $return callable($result) = $when_ok = A callback function called if success.
+		 *   array $result = Lexical indexed array containing the output parameters.
+		 *   string,false $return = The returned value of the command or true if success.
+		 * Return:
+		 *
+		 */
 		private function rpc( $cmd, $data = null, $when_ok = null )
 		{
 			assert('in_array($cmd,array("add","append","cas","clear","cur_delete","cur_get","cur_get_key","cur_get_value","cur_jump","cur_jump_back","cur_set_value","cur_step","cur_remove","echo","get","get_bulk","increment","increment_double","match_prefix","match_regex","play_script","remove","remove_bulk","replace","report","set","set_bulk","status","synchronize","tune_replication","vacuum"))');
@@ -246,7 +270,15 @@ namespace KyotoTycoon
 
 			switch( curl_getinfo($this->curl(),CURLINFO_HTTP_CODE) )
 			{
-			case 200: if( $when_ok ) return call_user_func( $when_ok, $data ); else return true;
+			case 200:
+				if( $when_ok )
+				{
+					$data = call_user_func( $when_ok, $data );
+			 		assert('is_string($data) or $data===true');
+					return $data;
+				}
+				else
+					return true;
 			case 450: throw new InconsistencyException($this->uri,$data['ERROR']);
 			default: throw new ProtocolException($this->uri);
 			}
