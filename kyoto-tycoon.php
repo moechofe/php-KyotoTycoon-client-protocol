@@ -32,6 +32,14 @@ namespace KyotoTycoon
 			parent::__construct( "(Un)existing record was detected on server {$uri}. {$msg}", 2 );
 		}
 	}
+	class ProtocolException extends Exception
+	{
+		function __construct( $uri )
+		{
+			parent::__construct( "Bad protocol communication with the KyotoTycoon server {$uri}.", 3 );
+		}
+	}
+
 
 	// }}}
 
@@ -57,6 +65,54 @@ namespace KyotoTycoon
 		}
 
 		// }}}
+		// {{{ add()
+
+		/**
+		 * Add a record.
+		 * Params:
+		 *   string $key = The key of the record.
+		 *   string $value = The value of the record.
+		 *   numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *   null $xt = No expiration time is specified.
+		 * Return:
+		 *   true = If success
+		 * Throws:
+		 *   InconsistencyException = If the record already exists.
+		 */
+		function add( $key, $value, $xt = null )
+		{
+			assert('is_string($key)');
+			assert('is_string($value)');
+			assert('is_null($xt) or is_numeric($xt)');
+			if( $this->DB ) $DB = $this->DB;
+			if( ! $xt ) unset($xt);
+			return $this->rpc( 'add', compact('DB','key','value','xt'), null );
+		}
+
+		// }}}
+		// {{{ append()
+
+		/**
+		 * Append the value to a record.
+		 * Params:
+		 *   string $key = The key of the record.
+		 *   string $value = The value of the record.
+		 *   numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *   null $xt = No expiration time is specified.
+		 * Return:
+		 *   true = If success
+		 */
+		function append( $key, $value, $xt = null )
+		{
+			assert('is_string($key)');
+			assert('is_string($value)');
+			assert('is_null($xt) or is_numeric($xt)');
+			if( $this->DB ) $DB = $this->DB;
+			if( ! $xt ) unset($xt);
+			return $this->rpc( 'append', compact('DB','key','value','xt'), null );
+		}
+
+		// }}}
 		// {{{ clear
 
 		function __get( $property )
@@ -73,6 +129,17 @@ namespace KyotoTycoon
 		// }}}
 		// {{{ get()
 
+		/**
+		 * Retrieve the value of a record.
+		 * Params:
+		 *   string $key = The key of the record.
+		 *   (out) integer $xt = The absolute expiration time.
+		 *   (out) null $xt = There is no expiration time.
+		 * Return:
+		 *   string $value = The value of the record.
+		 * Throws:
+		 *   InconsistencyException = If the record do not exists.
+		 */
 		function get( $key, &$xt = null )
 		{
 			assert('is_string($key)');
@@ -87,6 +154,18 @@ namespace KyotoTycoon
 		// }}}
 		// {{{ replace()
 
+		/**
+		 * Replace the value of a record.
+		 * Params:
+		 *   string $key = The key of the record.
+		 *   string $value = The value of the record.
+		 *   numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *   null $xt = No expiration time is specified.
+		 * Return:
+		 *   true = If success
+		 * Throws:
+		 *   InconsistencyException = If the record do not exists.
+		 */
 		function replace( $key, $value, $xt = null )
 		{
 			assert('is_string($key)');
@@ -95,6 +174,29 @@ namespace KyotoTycoon
 			if( $this->DB ) $DB = $this->DB;
 			if( ! $xt ) unset($xt);
 			return $this->rpc( 'replace', compact('DB','key','value','xt'), null );
+		}
+
+		// }}}
+		// {{{ set()
+
+		/**
+		 * Set the value of a record.
+		 * Params:
+		 *   string $key = The key of the record.
+		 *   string $value = The value of the record.
+		 *   numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *   null $xt = No expiration time is specified.
+		 * Return:
+		 *   true = If success
+		 */
+		function set( $key, $value, $xt = null )
+		{
+			assert('is_string($key)');
+			assert('is_string($value)');
+			assert('is_null($xt) or is_numeric($xt)');
+			if( $this->DB ) $DB = $this->DB;
+			if( ! $xt ) unset($xt);
+			return $this->rpc( 'set', compact('DB','key','value','xt'), null );
 		}
 
 		// }}}
@@ -137,6 +239,8 @@ namespace KyotoTycoon
 				$data = array_combine(
 					array_map( function($k) { return substr($k,0,strpos($k,"\t")); }, $data ),
 					array_map( function($v) { return substr($v,strpos($v,"\t")+1); }, $data ) );
+			elseif( $data === false )
+				throw new ConnectionException($this->uri, curl_error($this->curl()));
 			else
 				$data = array();
 

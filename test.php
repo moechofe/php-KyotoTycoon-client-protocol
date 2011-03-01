@@ -78,17 +78,17 @@ test(
 	{
 		$kt = kt('http://martibox:1978');
 		ok( $kt->clear );
-		except( function() use($kt) {$kt->replace('a','academy');}, 'KyotoTycoon\InconsistencyException' );
-		isnull( $kt->get('a') );
+		except( function()use($kt){$kt->replace('a','academy');}, 'KyotoTycoon\InconsistencyException' );
+		except( function()use($kt){$kt->get('a');}, 'KyotoTycoon\InconsistencyException' );
 		ok( $kt->add('a', 'alien') );
 		is( $kt->get('a'), 'alien' );
 		ok( $kt->set('a', 'ananas') );
 		is( $kt->get('a'), 'ananas' );
 		ok( $kt->replace('a', 'akira') );
 		is( $kt->get('a'), 'akira');
-		isnull( $kt->add('a', 'aligator') );
+		except( function()use($kt){$kt->add('a', 'aligator');}, 'KyotoTycoon\InconsistencyException' );
 		is( $kt->get('a'), 'akira' );
-		ok( $kt->append('a'), ' kurozawa' );
+		ok( $kt->append('a', ' kurozawa') );
 		is( $kt->get('a'), 'akira kurozawa' );
 	}
 
