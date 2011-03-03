@@ -197,13 +197,13 @@ function isa( $object, $class, $msg = 'Should be an instance of' )
 {
 	assert('is_object($object)');
 	assert('is_string($class) or is_object($class)');
-	return ok( is_a( $object, is_object($class)?get_class($class):$class ), $msg );
+	return compare( $object, 'is_a', $class, $msg );
 }
 function isnota( $object, $class, $msg = 'Shouldn\'t be an instance of' )
 {
 	assert('is_object($object)');
 	assert('is_string($class) or is_object($class)');
-	return notok( is_a( $object, is_object($class)?get_class($class):$class ), $msg );
+	return notok( $object, '!is_a', $class, $msg );
 }
 
 /**
@@ -461,6 +461,8 @@ function compare( $test, $operator, $expected, $msg )
 	case '!is_numeric': $ok = !is_numeric($test); break;
 	case 'is_null': $ok = is_null($test); break;
 	case '!is_null': $ok = !is_null($test); break;
+	case 'is_a': $ok = is_a( $test, is_object($expected)?get_class($expected):$expected ); break;
+	case '!is_a': $ok = is_a( $test, is_object($expected)?get_class($expected):$expected ); break;
 	default: assert('false and "Invalide compare operator"');
 	}
 	result( $ok ? pass($msg) : fail($msg) );

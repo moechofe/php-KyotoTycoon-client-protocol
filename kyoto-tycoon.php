@@ -4,6 +4,13 @@ declare(encoding='UTF-8');
 namespace
 {
 
+	/**
+	 * Return an API object redy to send command to a KyotoTycoon server.
+	 * Params:
+	 *   string $uri = The URI of the KyotoTycoon server
+	 * Return:
+	 *   KyotoTycoon\API = The API object.
+	 */
 	function kt( $uri = 'http://localhost:1978' )
 	{
 		assert('is_array(parse_url($uri))');
@@ -145,7 +152,7 @@ namespace KyotoTycoon
 		 *   (out) integer $xt = The absolute expiration time.
 		 *   (out) null $xt = There is no expiration time.
 		 * Return:
-		 *   string $value = The value of the record.
+		 *   string = The value of the record.
 		 * Throws:
 		 *   InconsistencyException = If the record do not exists.
 		 */
@@ -157,6 +164,60 @@ namespace KyotoTycoon
 			return $this->rpc( 'get', compact('DB','key'), function($result) use(&$xt) {
 				if( isset($result['xt']) ) $xt = $result['xt'];
 				return $result['value'];
+			} );
+		}
+
+		// }}}
+		// {{{ increment()
+
+		/**
+		 * Add a number to the numeric integer value of a record.
+		 * Params:
+		 *   string $key = The key of the record.
+		 *   numeric $num = The additional number.
+		 *   numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *   null $xt = No expiration time is specified.
+		 * Return:
+		 *   string = The result value.
+		 * Throws:
+		 *   InconsistencyException = If the record was not compatible.
+		 */
+		function increment( $key, $num = 1, $xt = null )
+		{
+			assert('is_string($key)');
+			assert('is_numeric($num)');
+			assert('is_null($xt) or is_numeric($xt)');
+			if( $this->DB ) $DB = $this->DB;
+			if( ! $xt ) unset($xt);
+			return $this->rpc( 'increment', compact('DB','key','num','xt'), function($result) use(&$xt) {
+				return $result['num'];
+			} );
+		}
+
+		// }}}
+		// {{{ increment_double()
+
+		/**
+		 * Add a number to the numeric integer value of a record.
+		 * Params:
+		 *   string $key = The key of the record.
+		 *   numeric $num = The additional number.
+		 *   numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *   null $xt = No expiration time is specified.
+		 * Return:
+		 *   string = The result value.
+		 * Throws:
+		 *   InconsistencyException = If the record was not compatible.
+		 */
+		function increment_double( $key, $num = 1, $xt = null )
+		{
+			assert('is_string($key)');
+			assert('is_numeric($num)');
+			assert('is_null($xt) or is_numeric($xt)');
+			if( $this->DB ) $DB = $this->DB;
+			if( ! $xt ) unset($xt);
+			return $this->rpc( 'increment_double', compact('DB','key','num','xt'), function($result) use(&$xt) {
+				return $result['num'];
 			} );
 		}
 
