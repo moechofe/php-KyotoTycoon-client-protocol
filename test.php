@@ -30,7 +30,7 @@ test(
 
 	'Test sequence operations: increment, increment_double', function()
 	{
-		plan(8);
+		plan(7);
 		$kt = kt(server_uri);
 		ok( $kt->clear );
 		is( $kt->increment('i'), 1 );
@@ -38,7 +38,6 @@ test(
 		is( $kt->increment('i',-1), 1 );
 		is( $kt->increment('i','-1'), 0 );
 		is( $kt->increment('i','-2'), -2 );
-		except( function()use($kt){$kt->increment('i','one');}, 'OutOfBoundsException' );
 		ok( $kt->set('i','one') );
 
 	},
@@ -51,6 +50,22 @@ test(
 		ok( $kt->clear );
 		is( $kt->increment('i'), 1 );
 		except( function()use($kt){$kt->increment('i','one');}, 'OutOfBoundsException' );
+	},
+
+	'Test cas command', function()
+	{
+		plan(3);
+		$kt = kt(server_uri);
+		ok( $kt->clear );
+		except( function()use($kt){$kt->cas('b','bottle','battle');}, 'OutOfBoundsException' );
+		ok( $kt->set('b','banana') );
+		except( function()use($kt){$kt->cas('b','bottle','battle');}, 'OutOfBoundsException' );
+		ok( $kt->set('b','bottle') );
+		ok( $kt->cas('b','bottle','battle') );
+		is( $kt->get('b'), 'battle' );
+		ok( $kt->cas('b','battle',null) );
+		except( function()use($kt){$kt->get('b');}, 'OutOfBoundsException' );
+		ok( $kt->cas('b',null,'battle') );
 	}
 
 );

@@ -129,6 +129,33 @@ namespace KyotoTycoon
 		}
 
 		// }}}
+		// {{{ cas()
+
+		/**
+		 * Append the value to a record.
+		 * Params:
+		 *   string $key = The key of the record.
+		 *   string $oval = The old value.
+		 *   null $oval = If it is omittted, no record is meant.
+		 *   string $nval = The new value.
+		 *   null $nval = If it is omittted, the record is removed.
+		 *   numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *   null $xt = No expiration time is specified.
+		 * Return:
+		 *   true = If success
+		 */
+		function cas( $key, $oval, $nval, $xt = null )
+		{
+			assert('is_string($key)');
+			assert('is_string($oval) or is_null($oval)');
+			assert('is_string($nval) or is_null($nval)');
+			assert('is_null($xt) or is_numeric($xt)');
+			if( $this->DB ) $DB = $this->DB;
+			if( ! $xt ) unset($xt);
+			return $this->rpc( 'cas', compact('DB','key','oval','nval','xt'), null );
+		}
+
+		// }}}
 		// {{{ clear
 
 		function __get( $property )
@@ -163,6 +190,7 @@ namespace KyotoTycoon
 			if( ! $xt ) unset($xt);
 			return $this->rpc( 'get', compact('DB','key'), function($result) use(&$xt) {
 				if( isset($result['xt']) ) $xt = $result['xt'];
+				var_dump( $result );
 				return $result['value'];
 			} );
 		}
@@ -189,6 +217,7 @@ namespace KyotoTycoon
 			assert('is_null($xt) or is_numeric($xt)');
 			if( $this->DB ) $DB = $this->DB;
 			if( ! $xt ) unset($xt);
+			$num = (string)$num;
 			return $this->rpc( 'increment', compact('DB','key','num','xt'), function($result) use(&$xt) {
 				return $result['num'];
 			} );
@@ -216,9 +245,29 @@ namespace KyotoTycoon
 			assert('is_null($xt) or is_numeric($xt)');
 			if( $this->DB ) $DB = $this->DB;
 			if( ! $xt ) unset($xt);
+			$num = (string)$num;
 			return $this->rpc( 'increment_double', compact('DB','key','num','xt'), function($result) use(&$xt) {
 				return $result['num'];
 			} );
+		}
+
+		// }}}
+		// {{{ remove()
+
+		/**
+		 * Replace the value of a record.
+		 * Params:
+		 *   string $key = The key of the record.
+		 * Return:
+		 *   true = If success
+		 * Throws:
+		 *   InconsistencyException = If the record do not exists.
+		 */
+		function remove( $key )
+		{
+			assert('is_string($key)');
+			if( $this->DB ) $DB = $this->DB;
+			return $this->rpc( 'remove', compact('DB','key'), null );
 		}
 
 		// }}}
@@ -320,7 +369,7 @@ namespace KyotoTycoon
 
 			curl_setopt($this->curl(), CURLOPT_URL, "{$this->uri}/rpc/{$cmd}" );
 			curl_setopt($this->curl(), CURLOPT_POSTFIELDS, $post);
-			if( is_string($data = curl_exec($this->curl())) and $data and $data = explode("\r\n",trim($data)) )
+			if( is_string($c=$data = curl_exec($this->curl())) and $data and $data = explode("\r\n",trim($data)) )
 				$data = array_combine(
 					array_map( function($k) { return substr($k,0,strpos($k,"\t")); }, $data ),
 					array_map( function($v) { return substr($v,strpos($v,"\t")+1); }, $data ) );
@@ -328,7 +377,7 @@ namespace KyotoTycoon
 				throw new ConnectionException($this->uri, curl_error($this->curl()));
 			else
 				$data = array();
-
+var_dump( $post, $c );
 			switch( curl_getinfo($this->curl(),CURLINFO_HTTP_CODE) )
 			{
 			case 200:
