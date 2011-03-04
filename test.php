@@ -53,7 +53,7 @@ test(
 
 	'Test cas command', function()
 	{
-		plan(10);
+		plan(11);
 		$kt = kt(server_uri);
 		ok( $kt->clear );
 		except( function()use($kt){$kt->cas('b','bottle','battle');}, 'OutOfBoundsException' );
@@ -65,6 +65,7 @@ test(
 		ok( $kt->cas('b','battle',null) );
 		except( function()use($kt){$kt->get('b');}, 'OutOfBoundsException' );
 		ok( $kt->cas('b',null,'battle') );
+		is( $kt->get('b'), 'battle' );
 	}
 
 );
