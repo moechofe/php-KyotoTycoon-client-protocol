@@ -39,7 +39,6 @@ test(
 		is( $kt->increment('i','-1'), 0 );
 		is( $kt->increment('i','-2'), -2 );
 		ok( $kt->set('i','one') );
-
 	},
 
 	'Test error when assertion is unactivated', function()
@@ -54,7 +53,7 @@ test(
 
 	'Test cas command', function()
 	{
-		plan(3);
+		plan(10);
 		$kt = kt(server_uri);
 		ok( $kt->clear );
 		except( function()use($kt){$kt->cas('b','bottle','battle');}, 'OutOfBoundsException' );
