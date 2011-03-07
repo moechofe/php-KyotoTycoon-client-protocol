@@ -253,6 +253,28 @@ namespace KyotoTycoon
 		}
 
 		// }}}
+		// {{{ match_prefix()
+
+		/**
+		 * Get keys matching a prefix string.
+		 * Params:
+		 *   string $prefix = The prefix string.
+		 *   integer $max = The maximum number to retrieve.
+		 *   null $max = If it is omitted or negative, no limit is specified.
+		 *   (out) $num = The number of retrieved keys.
+		 * Return:
+		 *   array(string) = List of arbitrary records.
+		 * Throws:
+		 *   InconsistencyException = If the record do not exists.
+		 */
+		function match_prefix( $key )
+		{
+			assert('is_string($key)');
+			if( $this->DB ) $DB = $this->DB;
+			return $this->rpc( 'match_prefix', compact('DB','key'), null );
+		}
+
+		// }}}
 		// {{{ remove()
 
 		/**

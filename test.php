@@ -66,6 +66,20 @@ test(
 		except( function()use($kt){$kt->get('b');}, 'OutOfBoundsException' );
 		ok( $kt->cas('b',null,'battle') );
 		is( $kt->get('b'), 'battle' );
+	},
+
+	'Test match_prefix and match_regex', function()
+	{
+		plan(8);
+		$kt = kt(server_uri);
+		ok( $kt->server );
+		ok( $kt->set('a.b.c','ananas,banana,citrus') );
+		ok( $kt->set('a.c.b','ananas,citrus,banana') );
+		ok( $kt->set('b.c.a','banana,citrus,ananas') );
+		ok( $kt->set('b.a.c','banana,ananas,citrus') );
+		is( $kt->match_prefix('a.'), array('a.b.c'=>'ananas,banana,citrus','a.c.b'=>'ananas,citrus,banana') );
+		is( $kt->match_prefix('b.'), array('b.c.a'=>'banana,citrus,ananas','b.a.c'=>'banana,ananas,citrus') );
+		is( $kt->match_regex('\w\.c\.\w', array('a.c.b'=>'ananas,citrus,banana','b.c.a'=>'banana,citrus,ananas') );
 	}
 
 );
