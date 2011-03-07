@@ -77,9 +77,13 @@ test(
 		ok( $kt->set('a.c.b','ananas,citrus,banana') );
 		ok( $kt->set('b.c.a','banana,citrus,ananas') );
 		ok( $kt->set('b.a.c','banana,ananas,citrus') );
-		is( $kt->match_prefix('a.'), array('a.b.c'=>'ananas,banana,citrus','a.c.b'=>'ananas,citrus,banana') );
-		is( $kt->match_prefix('b.'), array('b.c.a'=>'banana,citrus,ananas','b.a.c'=>'banana,ananas,citrus') );
-		is( $kt->match_regex('\w\.c\.\w', array('a.c.b'=>'ananas,citrus,banana','b.c.a'=>'banana,citrus,ananas') );
+		isanarray( $r=$kt->match_prefix('a.') );
+		has( $r, 2 );
+		var_dump( $r, array_search('a.b.c', $r) );
+		ok( false===array_search('a.b.c', $r) );
+		ok( false===array_search('a.c.b', $r) );
+		is( $kt->match_prefix('b.'), array('b.c.a','b.a.c') );
+		is( $kt->match_regex('\w\.c\.\w'), array('a.c.b','b.c.a') );
 	}
 
 );
