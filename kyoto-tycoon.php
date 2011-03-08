@@ -197,6 +197,30 @@ namespace KyotoTycoon
 		}
 
 		// }}}
+		// {{{ cur_jump()
+
+		/**
+		 * Retrieve the value of a record.
+		 * Params:
+		 * 	 integer $CUR = The cursor identifier.
+		 *   string $key = The key of the destination record.
+		 *   null $key = If it is omitted, the first record is specified.
+		 * Return:
+		 *   string = The value of the record.
+		 * Throws:
+		 *   InconsistencyException = If the record do not exists.
+		 */
+		function cur_jump( $CUR, $key = null )
+		{
+			assert('is_integer($CUR)');
+			assert('is_string($key) or is_null($key)');
+			if( $this->DB ) $DB = $this->DB;
+			if( ! $key ) unset($key);
+			$CUR = (string)$CUR;
+			return $this->rpc( 'cur_jump', compact('DB','CUR','key'), null );
+		}
+
+		// }}}
 		// {{{ increment()
 
 		/**
@@ -263,17 +287,44 @@ namespace KyotoTycoon
 		 *   null $max = If it is omitted or negative, no limit is specified.
 		 *   (out) $num = The number of retrieved keys.
 		 * Return:
-		 *   array(string) = List of arbitrary records.
+		 *   array(string) = List of arbitrary keys.
 		 * Throws:
 		 *   InconsistencyException = If the record do not exists.
 		 */
 		function match_prefix( $prefix, $max = null, $num = null )
 		{
 			assert('is_string($prefix)');
-			assert('is_interger($max) or is_null($max)');
+			assert('is_numeric($max) or is_null($max)');
 			if( $this->DB ) $DB = $this->DB;
-			if( ! $max ) unset($max);
+			if( ! $max ) unset($max); else $max = (string)$max;
 			return $this->rpc( 'match_prefix', compact('DB','prefix','max'), function($result) use(&$num) {
+				$num = $result['num'];
+				return array_reduce(array_keys($result),function($a,$b)use(&$result){return $b[0]=='_'?array_merge($a,array(substr($b,1))):$a;},array());
+			}	);
+		}
+
+		// }}}
+		// {{{ match_regex()
+
+		/**
+		 * Get keys matching a ragular expression string.
+		 * Params:
+		 *   string $regex = The regular expression string.
+		 *   integer $max = The maximum number to retrieve.
+		 *   null $max = If it is omitted or negative, no limit is specified.
+		 *   (out) string $num = The number of retrieved keys.
+		 * Return:
+		 *   array(string) = List of arbitrary keys.
+		 * Throws:
+		 *   InconsistencyException = If the record do not exists.
+		 */
+		function match_regex( $regex, $max = null, $num = null )
+		{
+			assert('is_string($regex)');
+			assert('is_numeric($max) or is_null($max)');
+			if( $this->DB ) $DB = $this->DB;
+			if( ! $max ) unset($max); else $max = (string)$max;
+			return $this->rpc( 'match_regex', compact('DB','regex','max'), function($result) use(&$num) {
 				$num = $result['num'];
 				return array_reduce(array_keys($result),function($a,$b)use(&$result){return $b[0]=='_'?array_merge($a,array(substr($b,1))):$a;},array());
 			}	);
@@ -412,7 +463,7 @@ namespace KyotoTycoon
 				if( $when_ok )
 				{
 					$data = call_user_func( $when_ok, $data );
-			 		assert('is_string($data) or $data===true');
+			 		assert('is_string($data) or is_array($data) or $data===true');
 					return $data;
 				}
 				else

@@ -6,7 +6,7 @@ require_once 'kyoto-tycoon.php';
 define('server_uri','http://martibox:1978');
 
 test(
-
+/*
 	'Test simple operations: get,set,clear,replace,add,append,remove', function()
 	{
 		plan(15);
@@ -41,16 +41,6 @@ test(
 		ok( $kt->set('i','one') );
 	},
 
-	'Test error when assertion is unactivated', function()
-	{
-		plan(3);
-		assert_options(ASSERT_ACTIVE,false);
-		$kt = kt(server_uri);
-		ok( $kt->clear );
-		is( $kt->increment('i'), 1 );
-		except( function()use($kt){$kt->increment('i','one');}, 'OutOfBoundsException' );
-	},
-
 	'Test cas command', function()
 	{
 		plan(11);
@@ -70,21 +60,37 @@ test(
 
 	'Test match_prefix and match_regex', function()
 	{
-		plan(8);
+		plan(16);
 		$kt = kt(server_uri);
-		ok( $kt->server );
+		ok( $kt->clear );
 		ok( $kt->set('a.b.c','ananas,banana,citrus') );
 		ok( $kt->set('a.c.b','ananas,citrus,banana') );
 		ok( $kt->set('b.c.a','banana,citrus,ananas') );
 		ok( $kt->set('b.a.c','banana,ananas,citrus') );
 		isanarray( $r=$kt->match_prefix('a.') );
 		has( $r, 2 );
-		var_dump( $r, array_search('a.b.c', $r) );
-		ok( false===array_search('a.b.c', $r) );
-		ok( false===array_search('a.c.b', $r) );
-		is( $kt->match_prefix('b.'), array('b.c.a','b.a.c') );
-		is( $kt->match_regex('\w\.c\.\w'), array('a.c.b','b.c.a') );
-	}
+		ok( false!==array_search('a.b.c', $r) );
+		ok( false!==array_search('a.c.b', $r) );
+		isanarray( $r=$kt->match_prefix('b.') );
+		has( $r, 2 );
+		ok( false!==array_search('a.c.b', $r) );
+		ok( false!==array_search('b.c.a', $r) );
+		isanarray( $r=$kt->match_regex('\w\.c\.\w') );
+		has( $r, 1 );
+		ok( false!==array_search('a.c.b', $r) );
+	},
+*/
+		'Test cursor functions: cur_jump, cur_step, cur_set_value, cur_remove, cur_get_key, cur_get_value, cur_get', function()
+		{
+			plan(0);
+			$kt = kt(server_uri);
+			ok( $kt->clear );
+			ok( $kt->set('a','ananas') );
+			ok( $kt->set('b','banana') );
+			ok( $kt->set('c','citrus') );
+			ok( $kt->cur_jump(1) );
+
+		}
 
 );
 
