@@ -267,11 +267,16 @@ namespace KyotoTycoon
 		 * Throws:
 		 *   InconsistencyException = If the record do not exists.
 		 */
-		function match_prefix( $key )
+		function match_prefix( $prefix, $max = null, $num = null )
 		{
-			assert('is_string($key)');
+			assert('is_string($prefix)');
+			assert('is_interger($max) or is_null($max)');
 			if( $this->DB ) $DB = $this->DB;
-			return $this->rpc( 'match_prefix', compact('DB','key'), null );
+			if( ! $max ) unset($max);
+			return $this->rpc( 'match_prefix', compact('DB','prefix','max'), function($result) use(&$num) {
+				$num = $result['num'];
+				return array_reduce(array_keys($result),function($a,$b)use(&$result){return $b[0]=='_'?array_merge($a,array(substr($b,1))):$a;},array());
+			}	);
 		}
 
 		// }}}
