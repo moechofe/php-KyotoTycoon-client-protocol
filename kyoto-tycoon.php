@@ -197,6 +197,32 @@ namespace KyotoTycoon
 		}
 
 		// }}}
+		// {{{ cur_get()
+
+		/**
+		 * Get a pair of the key and the value of the current record.
+		 * Params:
+		 * 	 integer $CUR = The cursor identifier.
+		 *   true $step = To move the cursor to the next record.
+		 *   null,false $step = If it is omitted, the cursor stays at the current record.
+		 * Return:
+		 *   array(string,string) = The key and the record.
+		 * Throws:
+		 *   InconsistencyException = If the cursor is invalidated.
+		 */
+		function cur_get( $CUR, $step = true )
+		{
+			assert('is_integer($CUR)');
+			assert('is_bool($step) or is_null($step)');
+			if( $this->DB ) $DB = $this->DB;
+			if( ! $step ) unset($step); else $step = (string)$step;
+			$CUR = (string)$CUR;
+			return $this->rpc( 'cur_get', compact('DB','CUR','step'), function($result) {
+				return array($result['key']=>$result['value']);
+			} );
+		}
+
+		// }}}
 		// {{{ cur_jump()
 
 		/**
@@ -206,9 +232,9 @@ namespace KyotoTycoon
 		 *   string $key = The key of the destination record.
 		 *   null $key = If it is omitted, the first record is specified.
 		 * Return:
-		 *   string = The value of the record.
+		 *   true = If success
 		 * Throws:
-		 *   InconsistencyException = If the record do not exists.
+		 *   InconsistencyException = If the cursor is invalidated.
 		 */
 		function cur_jump( $CUR, $key = null )
 		{

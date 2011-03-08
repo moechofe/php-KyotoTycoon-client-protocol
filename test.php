@@ -89,7 +89,12 @@ test(
 			ok( $kt->set('b','banana') );
 			ok( $kt->set('c','citrus') );
 			ok( $kt->cur_jump(1) );
-
+			foreach( $kt->cur_get(1) as $k => $v ) switch( $k )
+			{
+			case'a': is( $v, 'ananas' ); break;
+			case'b': is( $v, 'banana' ); break;
+			case'c': is( $v, 'citrus' ); break;
+			}
 		}
 
 );
