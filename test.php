@@ -82,19 +82,25 @@ test(
 */
 		'Test cursor functions: cur_jump, cur_step, cur_set_value, cur_remove, cur_get_key, cur_get_value, cur_get', function()
 		{
-			plan(0);
+			plan(8);
 			$kt = kt(server_uri);
 			ok( $kt->clear );
 			ok( $kt->set('a','ananas') );
 			ok( $kt->set('b','banana') );
 			ok( $kt->set('c','citrus') );
 			ok( $kt->cur_jump(1) );
-			foreach( $kt->cur_get(1) as $k => $v ) switch( $k )
+			for( $i=0; $i<3; $i++ )
 			{
-			case'a': is( $v, 'ananas' ); break;
-			case'b': is( $v, 'banana' ); break;
-			case'c': is( $v, 'citrus' ); break;
+				$r = $kt->cur_get(1);
+				list($k,$v) = each($r);
+				switch( $k )
+				{
+				case'a': is( $v, 'ananas' ); break;
+				case'b': is( $v, 'banana' ); break;
+				case'c': is( $v, 'citrus' ); break;
+				}
 			}
+			except( function()use($kt){$kt->cur_get(1);}, 'OutOfBoundsException' );
 		}
 
 );
