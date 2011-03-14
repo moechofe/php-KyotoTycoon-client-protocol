@@ -1,15 +1,27 @@
 <?php
+
+/**
+ * API to communicate with a Kyoto Tycoon server.
+ * Author: martin mauchauffee
+ * Link: http://github.com/moechofe/phpkyototycoon
+ * Date: March 2011
+ * Requirement: PHP 5.3+
+ */
+
 declare(encoding='UTF-8');
 
 namespace
 {
 
 	/**
-	 * Return an API object redy to send command to a KyotoTycoon server.
+	 * Return an API object ready to send command to a KyotoTycoon server.
 	 * Params:
 	 *   string $uri = The URI of the KyotoTycoon server
 	 * Return:
 	 *   KyotoTycoon\API = The API object.
+	 * ----
+	 * $kt = kt();
+	 * ----
 	 */
 	function kt( $uri = 'http://localhost:1978' )
 	{
@@ -59,6 +71,10 @@ namespace KyotoTycoon
 
 	// }}}
 
+	/**
+	 * Main class of the API.
+	 * Send RPC request for now.
+	 */
 	final class API
 	{
 		// {{{ $keepalive, $timeout, $uri, $host, $post, $base, __construct()
