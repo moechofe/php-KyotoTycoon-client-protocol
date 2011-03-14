@@ -206,7 +206,7 @@ namespace KyotoTycoon
 		 *   true $step = To move the cursor to the next record.
 		 *   null,false $step = If it is omitted, the cursor stays at the current record.
 		 * Return:
-		 *   array(string,string) = The key and the record.
+		 *   array(string=>string) = The key and the value of the record.
 		 * Throws:
 		 *   InconsistencyException = If the cursor is invalidated.
 		 */
@@ -214,11 +214,60 @@ namespace KyotoTycoon
 		{
 			assert('is_integer($CUR)');
 			assert('is_bool($step) or is_null($step)');
-			if( $this->DB ) $DB = $this->DB;
 			if( ! $step ) unset($step); else $step = (string)$step;
 			$CUR = (string)$CUR;
-			return $this->rpc( 'cur_get', compact('DB','CUR','step'), function($result) {
+			return $this->rpc( 'cur_get', compact('CUR','step'), function($result) {
 				return array($result['key']=>$result['value']);
+			} );
+		}
+
+		// }}}
+		// {{{ cur_get_key()
+
+		/**
+		 * Get the key of the current record.
+		 * Params:
+		 * 	 integer $CUR = The cursor identifier.
+		 *   true $step = To move the cursor to the next record.
+		 *   null,false $step = If it is omitted, the cursor stays at the current record.
+		 * Return:
+		 *   string = The key of the record.
+		 * Throws:
+		 *   InconsistencyException = If the cursor is invalidated.
+		 */
+		function cur_get_key( $CUR, $step = true )
+		{
+			assert('is_integer($CUR)');
+			assert('is_bool($step) or is_null($step)');
+			if( ! $step ) unset($step); else $step = (string)$step;
+			$CUR = (string)$CUR;
+			return $this->rpc( 'cur_get_key', compact('CUR','step'), function($result) {
+				return $result['key'];
+			} );
+		}
+
+		// }}}
+		// {{{ cur_get_value()
+
+		/**
+		 * Get a pair of the key and the value of the current record.
+		 * Params:
+		 * 	 integer $CUR = The cursor identifier.
+		 *   true $step = To move the cursor to the next record.
+		 *   null,false $step = If it is omitted, the cursor stays at the current record.
+		 * Return:
+		 *   string = The value of the record.
+		 * Throws:
+		 *   InconsistencyException = If the cursor is invalidated.
+		 */
+		function cur_get_value( $CUR, $step = true )
+		{
+			assert('is_integer($CUR)');
+			assert('is_bool($step) or is_null($step)');
+			if( ! $step ) unset($step); else $step = (string)$step;
+			$CUR = (string)$CUR;
+			return $this->rpc( 'cur_get_value', compact('CUR','step'), function($result) {
+				return $result['value'];
 			} );
 		}
 
@@ -226,7 +275,7 @@ namespace KyotoTycoon
 		// {{{ cur_jump()
 
 		/**
-		 * Retrieve the value of a record.
+		 * Jump the cursor to the first record for forward scan.
 		 * Params:
 		 * 	 integer $CUR = The cursor identifier.
 		 *   string $key = The key of the destination record.
@@ -244,6 +293,87 @@ namespace KyotoTycoon
 			if( ! $key ) unset($key);
 			$CUR = (string)$CUR;
 			return $this->rpc( 'cur_jump', compact('DB','CUR','key'), null );
+		}
+
+		// }}}
+		// {{{ cur_jump_back()
+
+		/**
+		 * Jump the cursor to a record for forward scan.
+		 * Params:
+		 * 	 integer $CUR = The cursor identifier.
+		 *   string $key = The key of the destination record.
+		 *   null $key = If it is omitted, the first record is specified.
+		 * Return:
+		 *   true = If success
+		 * Throws:
+		 *   InconsistencyException = If the cursor is invalidated.
+		 */
+		function cur_jump_back( $CUR, $key = null )
+		{
+			assert('is_integer($CUR)');
+			assert('is_string($key) or is_null($key)');
+			if( $this->DB ) $DB = $this->DB;
+			if( ! $key ) unset($key);
+			$CUR = (string)$CUR;
+			return $this->rpc( 'cur_jump_back', compact('DB','CUR','key'), null );
+		}
+
+		// }}}
+		// {{{ cur_step()
+
+		/**
+		 * Retrieve the value of a record.
+		 * Params:
+		 * 	 integer $CUR = The cursor identifier.
+		 * Return:
+		 *   true = If success
+		 * Throws:
+		 *   InconsistencyException = If the cursor is invalidated.
+		 */
+		function cur_step( $CUR )
+		{
+			assert('is_integer($CUR)');
+			$CUR = (string)$CUR;
+			return $this->rpc( 'cur_step', compact('CUR'), null );
+		}
+
+		// }}}
+		// {{{ cur_step_back()
+
+		/**
+		 * Retrieve the value of a record.
+		 * Params:
+		 * 	 integer $CUR = The cursor identifier.
+		 * Return:
+		 *   true = If success
+		 * Throws:
+		 *   InconsistencyException = If the cursor is invalidated.
+		 */
+		function cur_step_back( $CUR )
+		{
+			assert('is_integer($CUR)');
+			$CUR = (string)$CUR;
+			return $this->rpc( 'cur_step_back', compact('CUR'), null );
+		}
+
+		// }}}
+		// {{{ cur_remove()
+
+		/**
+		 * Remove the current record.
+		 * Params:
+		 * 	 integer $CUR = The cursor identifier.
+		 * Return:
+		 *   true = If success
+		 * Throws:
+		 *   InconsistencyException = If the cursor is invalidated.
+		 */
+		function cur_remove( $CUR )
+		{
+			assert('is_integer($CUR)');
+			$CUR = (string)$CUR;
+			return $this->rpc( 'cur_remove', compact('CUR'), null );
 		}
 
 		// }}}
@@ -459,7 +589,7 @@ namespace KyotoTycoon
 		 */
 		private function rpc( $cmd, $data = null, $when_ok = null )
 		{
-			assert('in_array($cmd,array("add","append","cas","clear","cur_delete","cur_get","cur_get_key","cur_get_value","cur_jump","cur_jump_back","cur_set_value","cur_step","cur_remove","echo","get","get_bulk","increment","increment_double","match_prefix","match_regex","play_script","remove","remove_bulk","replace","report","set","set_bulk","status","synchronize","tune_replication","vacuum"))');
+			assert('in_array($cmd,array("add","append","cas","clear","cur_delete","cur_get","cur_get_key","cur_get_value","cur_jump","cur_jump_back","cur_set_value","cur_step","cur_step_back","cur_remove","echo","get","get_bulk","increment","increment_double","match_prefix","match_regex","play_script","remove","remove_bulk","replace","report","set","set_bulk","status","synchronize","tune_replication","vacuum"))');
 			assert('is_null($data) or count($data)==count(array_filter(array_keys($data),"is_string"))');
 			assert('is_null($data) or count($data)==count(array_filter($data,"is_string"))');
 			assert('is_callable($when_ok) or is_null($when_ok)');
@@ -495,6 +625,7 @@ namespace KyotoTycoon
 				else
 					return true;
 			case 450: throw new InconsistencyException($this->uri,$data['ERROR']);
+			case 501: var_dump($data); throw new ImplementationException($this->uri);
 			default: throw new ProtocolException($this->uri);
 			}
 		}

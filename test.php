@@ -82,26 +82,40 @@ test(
 */
 		'Test cursor functions: cur_jump, cur_step, cur_set_value, cur_remove, cur_get_key, cur_get_value, cur_get', function()
 		{
-			plan(8);
 			$kt = kt(server_uri);
+			$get = function($r) { list($k,$v) = each($r); echo "$k=>$v\n"; switch($k) {
+				case'a': is( $v, 'ananas' ); break;
+				case'b': is( $v, 'banana' ); break;
+				case'c': is( $v, 'citrus' ); break; } };
+
+			plan(4);
 			ok( $kt->clear );
 			ok( $kt->set('a','ananas') );
 			ok( $kt->set('b','banana') );
 			ok( $kt->set('c','citrus') );
+
+			plan(5);
 			ok( $kt->cur_jump(1) );
-			for( $i=0; $i<3; $i++ )
-			{
-				$r = $kt->cur_get(1);
-				list($k,$v) = each($r);
-				switch( $k )
-				{
-				case'a': is( $v, 'ananas' ); break;
-				case'b': is( $v, 'banana' ); break;
-				case'c': is( $v, 'citrus' ); break;
-				}
-			}
+			for( $i=0; $i<3; $i++ ) $get( $kt->cur_get(1) );
 			except( function()use($kt){$kt->cur_get(1);}, 'OutOfBoundsException' );
-		}
+
+			plan(7);
+			ok( $kt->cur_jump(1) );
+			for( $i=0; $i<2; $i++ ) { $get( $kt->cur_get(1,false) ); ok( $kt->cur_step(1) ); }
+			$get( $kt->cur_get(1,false) );
+			except( function()use($kt){$kt->cur_step(1);}, 'OutOfBoundsException' );
+
+			plan(11);
+			ok( $kt->cur_jump(1) );
+			for( $i=0; $i<3; $i++ ) $get( array($kt->cur_get_key(1,false) => $kt->cur_get_value(1,true) ) );
+			for( $i=0; $i<3; $i++ ) { ok( $kt->cur_step_back(1) ); $get( array($kt->cur_get_key(1,false) => $kt->cur_get_value(1,false) ) ); }
+			except( function()use($kt){$kt->cur_step_back(1);}, 'OutOfBoundsException' );
+
+			plan(7);
+			ok( $kt->cur_jump_back(1) );
+			for( $i=0; $i<2; $i++ ) { $get( $kt->cur_get(1,false) ); ok( $kt->cur_remove(1) ); ok( $kt->cur_step_back(1) ); }
+			$get( $kt->cur_get(1,false) );
+			except( function()use($kt){$kt->cur_step_back(1);}, 'OutOfBoundsException' );		}
 
 );
 
