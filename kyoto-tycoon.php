@@ -26,7 +26,7 @@ namespace
 	function kt( $uri = 'http://localhost:1978' )
 	{
 		assert('is_array(parse_url($uri))');
-		return new KyotoTycoon\API( $uri );
+		return new KyotoTycoon\UI( $uri );
 	}
 
 }
@@ -70,6 +70,31 @@ namespace KyotoTycoon
 
 
 	// }}}
+
+	/**
+	 * Fluent and quick user interface
+	 */
+	final class UI
+	{
+		private $api = null;
+
+		function __construct( $uri = 'http://localhost:1978' )
+		{
+			assert('is_array(parse_url($uri))');
+			$this->api = new API( $uri );
+		}
+
+		function __get( $property )
+		{
+			assert('preg_match("/^[\w_]+$/",$property)');
+			switch( $property )
+			{
+			case 'clear':
+				$this->api->clear;
+				return $this;
+			}
+		}
+	}
 
 	/**
 	 * Main class of the API.
@@ -183,7 +208,7 @@ namespace KyotoTycoon
 			{
 			case 'clear':
 				if( $this->DB ) $DB = $this->DB;
-				return $this->rpc( 'clear', null, null );
+				return $this->rpc( 'clear', compact('DB'), null );
 			}
 		}
 

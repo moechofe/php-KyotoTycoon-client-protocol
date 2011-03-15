@@ -12,7 +12,7 @@ test(
 	'Test simple operations: get,set,clear,replace,add,append,remove', function()
 	{
 		plan(15);
-		$kt = KyotoTycoon/API(server_uri);
+		$kt = new KyotoTycoon\API(server_uri);
 		ok( $kt->clear );
 		except( function()use($kt){$kt->replace('a','academy');}, 'OutOfBoundsException' );
 		except( function()use($kt){$kt->get('a');}, 'OutOfBoundsException' );
@@ -33,7 +33,7 @@ test(
 	'Test sequence operations: increment, increment_double', function()
 	{
 		plan(7);
-		$kt = KyotoTycoon/API(server_uri);
+		$kt = new KyotoTycoon\API(server_uri);
 		ok( $kt->clear );
 		is( $kt->increment('i'), 1 );
 		is( $kt->increment('i',1), 2 );
@@ -46,7 +46,7 @@ test(
 	'Test cas command', function()
 	{
 		plan(11);
-		$kt = KyotoTycoon/API(server_uri);
+		$kt = new KyotoTycoon\API(server_uri);
 		ok( $kt->clear );
 		except( function()use($kt){$kt->cas('b','bottle','battle');}, 'OutOfBoundsException' );
 		ok( $kt->set('b','banana') );
@@ -63,7 +63,7 @@ test(
 	'Test match_prefix and match_regex', function()
 	{
 		plan(16);
-		$kt = KyotoTycoon/API(server_uri);
+		$kt = new KyotoTycoon\API(server_uri);
 		ok( $kt->clear );
 		ok( $kt->set('a.b.c','ananas,banana,citrus') );
 		ok( $kt->set('a.c.b','ananas,citrus,banana') );
@@ -84,7 +84,7 @@ test(
 
 		'Test cursor functions: cur_jump, cur_step, cur_set_value, cur_remove, cur_get_key, cur_get_value, cur_get', function()
 		{
-			$kt = KyotoTycoon/API(server_uri);
+			$kt = new KyotoTycoon\API(server_uri);
 			$get = function($r) { list($k,$v) = each($r); switch($k) {
 				case'a': is( $v, 'ananas' ); break;
 				case'b': is( $v, 'banana' ); break;
@@ -122,6 +122,7 @@ test(
 
 		'Test fluent and quick interface', function()
 		{
+			plan(33);
 			$kt = kt(server_uri);
 			isnull( $kt->c );
 			truly( $kt->clear->a('ananas')->bat('battle')->ban('banana')->c('citrus'), $kt );
@@ -143,8 +144,8 @@ test(
 				is( $v, $k=='ban'?'banana':'battle' );
 			foreach( $kt->backward('ban') as $k => $v )
 				is( $v, $k=='ban'?'banana':'ananas' );
-			is( $kt->inc('i'), 1 ); 
-			is( $kt->inc('i',2), 3 ); 
+			is( $kt->inc('i'), 1 );
+			is( $kt->inc('i',2), 3 );
 			is( $kt->inc('f',0.1), 0.1 );
 			is( $kt->inc('f',0.2), 0.3 );
 			is( $kt->set('a','akira')->cat('a',' kurozawa')->get('a'), 'akira kurozawa' );
@@ -155,9 +156,11 @@ test(
 			notok( $kt->rep('a','alien') );
 			ok( $kt->add('a','alien') );
 			notok( $kt->cas('a','ananas','akira') );
-			notok( $kt->cas('a','alien','akira') );
-			from(&
-			to(&
+			ok( $kt->cas('a','alien','akira') );
+			$a = null;
+			$c = 'citrus';
+			truly( $kt->to('a',$a)->from('c',$c), $kt );
+			is( $kt->c, $c );
 		}
 
 );
