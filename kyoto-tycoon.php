@@ -99,6 +99,8 @@ namespace KyotoTycoon
 		 */
 		static $cursors = array();
 
+		// {{{ __construct(), __clone()
+
 		function __construct( $uri = 'http://localhost:1978' )
 		{
 			assert('is_array(parse_url($uri))');
@@ -118,6 +120,9 @@ namespace KyotoTycoon
 			$this->startkey = null;
 		}
 
+		// }}}
+		// {{{ __get(), __isset(), __unset(), __call()
+
 		function __get( $property )
 		{
 			assert('preg_match("/^[\w_]+$/",$property)');
@@ -134,7 +139,13 @@ namespace KyotoTycoon
 		function __isset( $key )
 		{
 			assert('preg_match("/^[\w_]+$/",$property)');
-			return is_null( $this->get($key) );
+			return is_string( $this->get($key) );
+		}
+
+		function __unset( $key )
+		{
+			assert('preg_match("/^[\w_]+$/",$property)');
+			$this->del($key);
 		}
 
 		function __call( $method, $args )
@@ -143,6 +154,9 @@ namespace KyotoTycoon
 			assert('is_scalar($args[0])');
 			return $this->set($method, (string)$args[0]);
 		}
+
+		// }}}
+		// {{{ get(), gxt(), set(), inc(), cat(), add(), rep(), del(), cas()
 
 		/**
 		 * Retrieve the value of a record.
@@ -191,10 +205,9 @@ namespace KyotoTycoon
 		 *	 numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
 		 *	 null $xt = No expiration time is specified.
 		 * Return:
-		 *	 true = If success.
-		 *	 false = If an error ocurred.
+		 *	 UI = The object itseft.
 		 */
-		function set( $key, $value, &$xt = null )
+		function set( $key, $value, $xt = null )
 		{
 			assert('is_string($key)');
 			assert('is_string($value)');
@@ -217,6 +230,116 @@ namespace KyotoTycoon
 			}
 			catch( OutOfBoundsException $e ); { return null; }
 		}
+
+		/**
+		 * Append the value to a record.
+		 * Params:
+		 *	 string $key = The key of the record.
+		 *	 string $value = The value of the record.
+		 *	 numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *	 null $xt = No expiration time is specified.
+		 * Return:
+		 *	 true = If success.
+		 *	 false = If an error ocurred.
+		 */
+		function cat( $key, $value, $xt = null )
+		{
+			assert('is_string($key)');
+			assert('is_string($value)');
+			assert('is_null($xt) or is_numeric($xt)');
+			try { return $this->api->append($key,$value,$xt); }
+			catch( RuntimeException $e ); { return false; }
+		}
+
+		/**
+		 * Add a record if it not exits.
+		 * Params:
+		 *	 string $key = The key of the record.
+		 *	 string $value = The value of the record.
+		 *	 numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *	 null $xt = No expiration time is specified.
+		 * Return:
+		 *	 true = If success.
+		 *	 false = If an error ocurred.
+		 *	 null = If the record already exists.
+		 */
+		function add( $key, $value, $xt = null )
+		{
+			assert('is_string($key)');
+			assert('is_string($value)');
+			assert('is_null($xt) or is_numeric($xt)');
+			try { return $this->api->add($key,$value,$xt); }
+			catch( OutOfBoundsException $e ); { return null; }
+			catch( RuntimeException $e ); { return false; }
+		}
+
+		/**
+		 * Replace the value of a record.
+		 * Params:
+		 *	 string $key = The key of the record.
+		 *	 string $value = The value of the record.
+		 *	 numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *	 null $xt = No expiration time is specified.
+		 * Return:
+		 *	 true = If success.
+		 *	 false = If an error ocurred.
+		 *	 null = If the record don't exists.
+		 */
+		function rep( $key, $value, $xt = null )
+		{
+			assert('is_string($key)');
+			assert('is_string($value)');
+			assert('is_null($xt) or is_numeric($xt)');
+			try { return $this->api->replace($key,$value,$xt); }
+			catch( OutOfBoundsException $e ); { return null; }
+			catch( RuntimeException $e ); { return false; }
+		}
+
+		/**
+		 * Replace the value of a record.
+		 * Params:
+		 *	 string $key = The key of the record.
+		 * Return:
+		 *	 true = If succes.
+		 *	 false = If an error ocurred.
+		 *	 null = If the record don't exists.
+		 */
+		function del( $key )
+		{
+			assert('is_string($key)');
+			try { $this->api->remove($key); return $this; }
+			catch( OutOfBoundsException $e ); { return null; }
+			catch( RuntimeException $e ); { return false; }
+		}
+
+		/**
+		 * Perform compare-and-swap.
+		 * Params:
+		 *	 string $key = The key of the record.
+		 *	 string $oval = The old value.
+		 *	 null $oval = If it is omittted, no record is meant.
+		 *	 string $nval = The new value.
+		 *	 null $nval = If it is omittted, the record is removed.
+		 *	 numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *	 null $xt = No expiration time is specified.
+		 * Return:
+		 *	 true = If success.
+		 *	 false = If an error ocurred.
+		 *	 null = If the old value assumption was failed.
+		 */
+		function cas( $key, $oval, $nval, $xt = null )
+		{
+			assert('is_string($key)');
+			assert('is_string($oval) or is_null($oval)');
+			assert('is_string($nval) or is_null($nval)');
+			assert('is_null($xt) or is_numeric($xt)');
+			try { return $this->api->cas($key,$oval,$nval,$xt); }
+			catch( OutOfBoundsException $e ) { return null; }
+			catch( RuntimeException $e ); { return false; }
+		}
+
+		// }}}
+		// {{{ begin(), search(), forward(), backward()
 
 		function begin( $prefix, $max = 0, &$num = null )
 		{
@@ -249,7 +372,7 @@ namespace KyotoTycoon
 			return $stm;
 		}
 
-		function forward( $key = null )
+		function backward( $key = null )
 		{
 			assert('is_string($key) or is_null($key)');
 			$stm = clone $this;
@@ -258,6 +381,7 @@ namespace KyotoTycoon
 			return $stm;
 		}
 
+		// }}}
 		// {{{ rewind(), current(), key(), next(), valid()
 
 		/**
@@ -358,7 +482,6 @@ namespace KyotoTycoon
 		}
 
 		// }}}
-
 	}
 
 	/**
@@ -438,7 +561,7 @@ namespace KyotoTycoon
 		// {{{ cas()
 
 		/**
-		 * Append the value to a record.
+		 * Perform compare-and-swap.
 		 * Params:
 		 *	 string $key = The key of the record.
 		 *	 string $oval = The old value.
