@@ -8,7 +8,7 @@ define('server_uri','http://martibox:1978');
 skip_ok();
 
 test(
-	// {{{ 'Test simple operations
+	// {{{ Test simple operations
 
 	'Test simple operations: get,set,clear,replace,add,append,remove', function()
 	{
@@ -181,5 +181,4 @@ test(
 
 	// }}}
 );
-
 

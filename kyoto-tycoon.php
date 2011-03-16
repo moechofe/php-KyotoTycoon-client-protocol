@@ -16,11 +16,17 @@ namespace
 	/**
 	 * Return an API object ready to send command to a KyotoTycoon server.
 	 * Params:
-	 *   string $uri = The URI of the KyotoTycoon server
+	 *	 string $uri = The URI of the KyotoTycoon server
 	 * Return:
-	 *   KyotoTycoon\API = The API object.
+	 *	 KyotoTycoon\UI = The User Interface object.
 	 * ----
 	 * $kt = kt();
+	 * ----
+	 * Get the expiration time of a record.
+	 * ----
+	 * $kt = kt();
+	 * $kt->set('a','ananas',2);
+	 * var_dump( $kt->gxt('a');
 	 * ----
 	 */
 	function kt( $uri = 'http://localhost:1978' )
@@ -74,14 +80,42 @@ namespace KyotoTycoon
 	/**
 	 * Fluent and quick user interface
 	 */
-	final class UI
+	final class UI implements Iterator
 	{
 		private $api = null;
+
+		private $prefix = null;
+		private $regex = null;
+		private $max = null;
+		private $num = null;
+		private $keys = null;
+		private $record = null;
+		private $backward = null;
+		private $cursor = null;
+		private $startkey = null;
+
+		/**
+ 		 * Maintain a list of all used Kyoto Tycoon cursor (CUR).
+		 */
+		static $cursors = array();
 
 		function __construct( $uri = 'http://localhost:1978' )
 		{
 			assert('is_array(parse_url($uri))');
-			$this->api = new API( $uri );
+			$this->api = new API( $uri
+		}
+
+		function __clone()
+		{
+			$this->prefix = null;
+			$this->regex = null;
+			$this->max = null;
+			$this->num = null;
+			$this->cursor = null;
+			$this->keys = null;
+			$this->record = null;
+			$this->backward = null;
+			$this->startkey = null;
 		}
 
 		function __get( $property )
@@ -92,8 +126,239 @@ namespace KyotoTycoon
 			case 'clear':
 				$this->api->clear;
 				return $this;
+			default:
+				return $this->get($property);
 			}
 		}
+
+		function __isset( $key )
+		{
+			assert('preg_match("/^[\w_]+$/",$property)');
+			return is_null( $this->get($key) );
+		}
+
+		function __call( $method, $args )
+		{
+			assert('preg_match("/^[\w_]+$/",$method)');
+			assert('is_scalar($args[0])');
+			return $this->set($method, (string)$args[0]);
+		}
+
+		/**
+		 * Retrieve the value of a record.
+		 * Params:
+		 *	 string $key = The key of the record.
+		 *	 (out) integer $xt = The absolute expiration time.
+		 *	 (out) null $xt = There is no expiration time.
+		 * Return:
+		 *	 string = The value of the record.
+		 *	 null = If the record do not exists.
+		 *	 false = If an error ocurred.
+		 */
+		function get( $key, &$xt = null )
+		{
+			assert('is_string($key)');
+			try { return $this->api->get($key,$xt); }
+			catch( OutOfBoundsException $e ); { return null; }
+			catch( RuntimeException $e ); { return false; }
+		}
+
+		/**
+		 * Retrieve the expiration time of a record.
+		 * Params:
+		 *	 string $key = The key of the record.
+		 *	 (out) integer $xt = The absolute expiration time.
+		 *	 (out) null $xt = There is no expiration time.
+		 * Return:
+		 *	 string = The value of the expiration time.
+		 *	 null = If the record do not exists.
+		 *	 false = If an error ocurred.
+		 */
+		function gxt( $key )
+		{
+			assert('is_string($key)');
+			$xt = null;
+			try { $this->api->get($key,$xt); return $xt; }
+			catch( OutOfBoundsException $e ); { return null; }
+			catch( RuntimeException $e ); { return false; }
+		}
+
+		/**
+		 * Set the value of a record.
+		 * Params:
+		 *	 string $key = The key of the record.
+		 *	 string $value = The value of the record.
+		 *	 numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *	 null $xt = No expiration time is specified.
+		 * Return:
+		 *	 true = If success.
+		 *	 false = If an error ocurred.
+		 */
+		function set( $key, $value, &$xt = null )
+		{
+			assert('is_string($key)');
+			assert('is_string($value)');
+			assert('is_null($xt) or is_numeric($xt)');
+			try { $this->api->set($key,$value,$xt); return $this; }
+			catch( RuntimeException $e ); { return false; }
+		}
+
+		function inc( $key, $num = 1, $xt = null )
+		{
+			assert('is_string($key)');
+			assert('is_numeric($num)');
+			assert('is_null($xt) or is_numeric($xt)');
+			try
+			{
+				if( is_integer($num) or (int)$num==$num )
+					return $this->api->increment( $key, $num, $xt );
+				else
+					return $this->api->increment_double( $key, $num, $xt );
+			}
+			catch( OutOfBoundsException $e ); { return null; }
+		}
+
+		function begin( $prefix, $max = 0, &$num = null )
+		{
+			assert('is_string($prefix)');
+			assert('is_numeric($max) and $max>=0 and (int)$max==$max');
+			$stm = clone $this;
+			$stm->prefix = $prefix;
+			$stm->max = $max;
+			$stm->num = &$num;
+			return $stm;
+		}
+
+		function search( $regex, $max = 0, &$num = null )
+		{
+			assert('is_string($regex)');
+			assert('is_numeric($max) and $max>=0 and (int)$max==$max');
+			$stm = clone $this;
+			$stm->regex = $regex;
+			$stm->max = $max;
+			$stm->num = &$num;
+			return $stm;
+		}
+
+		function forward( $key = null )
+		{
+			assert('is_string($key) or is_null($key)');
+			$stm = clone $this;
+			$stm->startkey = $key;
+			$stm->backward = false;
+			return $stm;
+		}
+
+		function forward( $key = null )
+		{
+			assert('is_string($key) or is_null($key)');
+			$stm = clone $this;
+			$stm->startkey = $key;
+			$stm->backward = true;
+			return $stm;
+		}
+
+		// {{{ rewind(), current(), key(), next(), valid()
+
+		/**
+		 * TODO check if integer limit is reach with cursor.
+		 */
+		function rewind()
+		{
+			$this->record = null;
+			// If prefix is set, then retrieve the list of keys begin with this prefix.
+			if( ! is_null($this->prefix) )
+				$this->keys = $this->match_prefix( $this->prefix, $this->limit, $this->num );
+			// Else, if regex is set, then retrieve the list of keys that match this regex.
+			elseif( ! is_null($this->regex) )
+				$this->keys = $this->match_regex( $this->regex, $this->limit, $this->num );
+			// Else, the cursor will be use
+			else
+			{
+				// If no cursor was set, the create a new one. It need to be uniq for each cURL session.
+				if( is_null($this->cursor) )
+				{
+					if( ! $cursor = end($this->cursors) ) $this->cursor = 1;
+					else $this->cursor = $cursor+1;
+					$this->cursors[$this->cursor] = $this->cursor;
+				}
+				var_dump( "cursor: {$this->cursor}" );
+				// Now set the position of the cursor.
+				try
+				{
+					if( $this->backward )
+						$this->api->cur_jump_back( $this->cursor, $this->startkey );
+					else
+						$this->api->cur_jump( $this->cursor, $this->startkey );
+				}
+				catch( OutOfBoundsException $e; ) {}
+			}
+		}
+
+		function current()
+		{
+			if( ! is_null($this->prefix) or is_null($this->regex) )
+			{
+				assert('is_array($this->keys)');
+				return current($this->keys);
+			}
+			elseif( ! is_null($this->cursor) )
+			{
+				assert('is_array($this->record)');
+				return current($this->record);
+			}
+			else
+				return null;
+		}
+
+		function key()
+		{
+			if( ! is_null($this->prefix) or is_null($this->regex) )
+			{
+				assert('is_array($this->keys)');
+				return key($this->keys);
+			}
+			elseif( ! is_null($this->cursor) )
+			{
+				assert('is_array($this->record)');
+				return key($this->record);
+			}
+			else
+				return null;
+		}
+
+		function next()
+		{
+			if( ! is_null($this->prefix) or is_null($this->regex) )
+			{
+				assert('is_array($this->keys)');
+				next($this->keys);
+			}
+			elseif( ! is_null($this->cursor) )
+			{
+				try { $this->api->cur_step($this->cursor); }
+				catch( OutOfBoundsException $e ) {}
+			}
+		}
+
+		function valid()
+		{
+			if( ! is_null($this->prefix) or is_null($this->regex) )
+			{
+				assert('is_array($this->keys)');
+				return current($this->keys);
+			}
+			elseif( ! is_null($this->cursor) )
+			{
+				try { $this->record = $this->api->cur_get($this->cursor,false); return $this->record; }
+				catch( OutOfBoundsException $e ) { return false; }
+			}
+			else
+				return false;
+		}
+
+		// }}}
+
 	}
 
 	/**
@@ -127,14 +392,14 @@ namespace KyotoTycoon
 		/**
 		 * Add a record.
 		 * Params:
-		 *   string $key = The key of the record.
-		 *   string $value = The value of the record.
-		 *   numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
-		 *   null $xt = No expiration time is specified.
+		 *	 string $key = The key of the record.
+		 *	 string $value = The value of the record.
+		 *	 numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *	 null $xt = No expiration time is specified.
 		 * Return:
-		 *   true = If success
+		 *	 true = If success
 		 * Throws:
-		 *   InconsistencyException = If the record already exists.
+		 *	 InconsistencyException = If the record already exists.
 		 */
 		function add( $key, $value, $xt = null )
 		{
@@ -152,12 +417,12 @@ namespace KyotoTycoon
 		/**
 		 * Append the value to a record.
 		 * Params:
-		 *   string $key = The key of the record.
-		 *   string $value = The value of the record.
-		 *   numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
-		 *   null $xt = No expiration time is specified.
+		 *	 string $key = The key of the record.
+		 *	 string $value = The value of the record.
+		 *	 numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *	 null $xt = No expiration time is specified.
 		 * Return:
-		 *   true = If success
+		 *	 true = If success
 		 */
 		function append( $key, $value, $xt = null )
 		{
@@ -175,15 +440,15 @@ namespace KyotoTycoon
 		/**
 		 * Append the value to a record.
 		 * Params:
-		 *   string $key = The key of the record.
-		 *   string $oval = The old value.
-		 *   null $oval = If it is omittted, no record is meant.
-		 *   string $nval = The new value.
-		 *   null $nval = If it is omittted, the record is removed.
-		 *   numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
-		 *   null $xt = No expiration time is specified.
+		 *	 string $key = The key of the record.
+		 *	 string $oval = The old value.
+		 *	 null $oval = If it is omittted, no record is meant.
+		 *	 string $nval = The new value.
+		 *	 null $nval = If it is omittted, the record is removed.
+		 *	 numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *	 null $xt = No expiration time is specified.
 		 * Return:
-		 *   true = If success
+		 *	 true = If success
 		 */
 		function cas( $key, $oval, $nval, $xt = null )
 		{
@@ -218,13 +483,13 @@ namespace KyotoTycoon
 		/**
 		 * Retrieve the value of a record.
 		 * Params:
-		 *   string $key = The key of the record.
-		 *   (out) integer $xt = The absolute expiration time.
-		 *   (out) null $xt = There is no expiration time.
+		 *	 string $key = The key of the record.
+		 *	 (out) integer $xt = The absolute expiration time.
+		 *	 (out) null $xt = There is no expiration time.
 		 * Return:
-		 *   string = The value of the record.
+		 *	 string = The value of the record.
 		 * Throws:
-		 *   InconsistencyException = If the record do not exists.
+		 *	 InconsistencyException = If the record do not exists.
 		 */
 		function get( $key, &$xt = null )
 		{
@@ -244,12 +509,12 @@ namespace KyotoTycoon
 		 * Get a pair of the key and the value of the current record.
 		 * Params:
 		 * 	 integer $CUR = The cursor identifier.
-		 *   true $step = To move the cursor to the next record.
-		 *   null,false $step = If it is omitted, the cursor stays at the current record.
+		 *	 true $step = To move the cursor to the next record.
+		 *	 null,false $step = If it is omitted, the cursor stays at the current record.
 		 * Return:
-		 *   array(string=>string) = The key and the value of the record.
+		 *	 array(string=>string) = The key and the value of the record.
 		 * Throws:
-		 *   InconsistencyException = If the cursor is invalidated.
+		 *	 InconsistencyException = If the cursor is invalidated.
 		 */
 		function cur_get( $CUR, $step = true )
 		{
@@ -269,12 +534,12 @@ namespace KyotoTycoon
 		 * Get the key of the current record.
 		 * Params:
 		 * 	 integer $CUR = The cursor identifier.
-		 *   true $step = To move the cursor to the next record.
-		 *   null,false $step = If it is omitted, the cursor stays at the current record.
+		 *	 true $step = To move the cursor to the next record.
+		 *	 null,false $step = If it is omitted, the cursor stays at the current record.
 		 * Return:
-		 *   string = The key of the record.
+		 *	 string = The key of the record.
 		 * Throws:
-		 *   InconsistencyException = If the cursor is invalidated.
+		 *	 InconsistencyException = If the cursor is invalidated.
 		 */
 		function cur_get_key( $CUR, $step = true )
 		{
@@ -294,12 +559,12 @@ namespace KyotoTycoon
 		 * Get a pair of the key and the value of the current record.
 		 * Params:
 		 * 	 integer $CUR = The cursor identifier.
-		 *   true $step = To move the cursor to the next record.
-		 *   null,false $step = If it is omitted, the cursor stays at the current record.
+		 *	 true $step = To move the cursor to the next record.
+		 *	 null,false $step = If it is omitted, the cursor stays at the current record.
 		 * Return:
-		 *   string = The value of the record.
+		 *	 string = The value of the record.
 		 * Throws:
-		 *   InconsistencyException = If the cursor is invalidated.
+		 *	 InconsistencyException = If the cursor is invalidated.
 		 */
 		function cur_get_value( $CUR, $step = true )
 		{
@@ -319,12 +584,12 @@ namespace KyotoTycoon
 		 * Jump the cursor to the first record for forward scan.
 		 * Params:
 		 * 	 integer $CUR = The cursor identifier.
-		 *   string $key = The key of the destination record.
-		 *   null $key = If it is omitted, the first record is specified.
+		 *	 string $key = The key of the destination record.
+		 *	 null $key = If it is omitted, the first record is specified.
 		 * Return:
-		 *   true = If success
+		 *	 true = If success
 		 * Throws:
-		 *   InconsistencyException = If the cursor is invalidated.
+		 *	 InconsistencyException = If the cursor is invalidated.
 		 */
 		function cur_jump( $CUR, $key = null )
 		{
@@ -343,12 +608,12 @@ namespace KyotoTycoon
 		 * Jump the cursor to a record for forward scan.
 		 * Params:
 		 * 	 integer $CUR = The cursor identifier.
-		 *   string $key = The key of the destination record.
-		 *   null $key = If it is omitted, the first record is specified.
+		 *	 string $key = The key of the destination record.
+		 *	 null $key = If it is omitted, the first record is specified.
 		 * Return:
-		 *   true = If success
+		 *	 true = If success
 		 * Throws:
-		 *   InconsistencyException = If the cursor is invalidated.
+		 *	 InconsistencyException = If the cursor is invalidated.
 		 */
 		function cur_jump_back( $CUR, $key = null )
 		{
@@ -368,9 +633,9 @@ namespace KyotoTycoon
 		 * Params:
 		 * 	 integer $CUR = The cursor identifier.
 		 * Return:
-		 *   true = If success
+		 *	 true = If success
 		 * Throws:
-		 *   InconsistencyException = If the cursor is invalidated.
+		 *	 InconsistencyException = If the cursor is invalidated.
 		 */
 		function cur_step( $CUR )
 		{
@@ -387,9 +652,9 @@ namespace KyotoTycoon
 		 * Params:
 		 * 	 integer $CUR = The cursor identifier.
 		 * Return:
-		 *   true = If success
+		 *	 true = If success
 		 * Throws:
-		 *   InconsistencyException = If the cursor is invalidated.
+		 *	 InconsistencyException = If the cursor is invalidated.
 		 */
 		function cur_step_back( $CUR )
 		{
@@ -406,9 +671,9 @@ namespace KyotoTycoon
 		 * Params:
 		 * 	 integer $CUR = The cursor identifier.
 		 * Return:
-		 *   true = If success
+		 *	 true = If success
 		 * Throws:
-		 *   InconsistencyException = If the cursor is invalidated.
+		 *	 InconsistencyException = If the cursor is invalidated.
 		 */
 		function cur_remove( $CUR )
 		{
@@ -423,14 +688,14 @@ namespace KyotoTycoon
 		/**
 		 * Add a number to the numeric integer value of a record.
 		 * Params:
-		 *   string $key = The key of the record.
-		 *   numeric $num = The additional number.
-		 *   numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
-		 *   null $xt = No expiration time is specified.
+		 *	 string $key = The key of the record.
+		 *	 numeric $num = The additional number.
+		 *	 numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *	 null $xt = No expiration time is specified.
 		 * Return:
-		 *   string = The result value.
+		 *	 string = The result value.
 		 * Throws:
-		 *   InconsistencyException = If the record was not compatible.
+		 *	 InconsistencyException = If the record was not compatible.
 		 */
 		function increment( $key, $num = 1, $xt = null )
 		{
@@ -451,14 +716,14 @@ namespace KyotoTycoon
 		/**
 		 * Add a number to the numeric integer value of a record.
 		 * Params:
-		 *   string $key = The key of the record.
-		 *   numeric $num = The additional number.
-		 *   numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
-		 *   null $xt = No expiration time is specified.
+		 *	 string $key = The key of the record.
+		 *	 numeric $num = The additional number.
+		 *	 numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *	 null $xt = No expiration time is specified.
 		 * Return:
-		 *   string = The result value.
+		 *	 string = The result value.
 		 * Throws:
-		 *   InconsistencyException = If the record was not compatible.
+		 *	 InconsistencyException = If the record was not compatible.
 		 */
 		function increment_double( $key, $num = 1, $xt = null )
 		{
@@ -479,14 +744,14 @@ namespace KyotoTycoon
 		/**
 		 * Get keys matching a prefix string.
 		 * Params:
-		 *   string $prefix = The prefix string.
-		 *   integer $max = The maximum number to retrieve.
-		 *   null $max = If it is omitted or negative, no limit is specified.
-		 *   (out) $num = The number of retrieved keys.
+		 *	 string $prefix = The prefix string.
+		 *	 integer $max = The maximum number to retrieve.
+		 *	 null $max = If it is omitted or negative, no limit is specified.
+		 *	 (out) $num = The number of retrieved keys.
 		 * Return:
-		 *   array(string) = List of arbitrary keys.
+		 *	 array(string) = List of arbitrary keys.
 		 * Throws:
-		 *   InconsistencyException = If the record do not exists.
+		 *	 InconsistencyException = If the record do not exists.
 		 */
 		function match_prefix( $prefix, $max = null, $num = null )
 		{
@@ -506,14 +771,14 @@ namespace KyotoTycoon
 		/**
 		 * Get keys matching a ragular expression string.
 		 * Params:
-		 *   string $regex = The regular expression string.
-		 *   integer $max = The maximum number to retrieve.
-		 *   null $max = If it is omitted or negative, no limit is specified.
-		 *   (out) string $num = The number of retrieved keys.
+		 *	 string $regex = The regular expression string.
+		 *	 integer $max = The maximum number to retrieve.
+		 *	 null $max = If it is omitted or negative, no limit is specified.
+		 *	 (out) string $num = The number of retrieved keys.
 		 * Return:
-		 *   array(string) = List of arbitrary keys.
+		 *	 array(string) = List of arbitrary keys.
 		 * Throws:
-		 *   InconsistencyException = If the record do not exists.
+		 *	 InconsistencyException = If the record do not exists.
 		 */
 		function match_regex( $regex, $max = null, $num = null )
 		{
@@ -533,11 +798,11 @@ namespace KyotoTycoon
 		/**
 		 * Replace the value of a record.
 		 * Params:
-		 *   string $key = The key of the record.
+		 *	 string $key = The key of the record.
 		 * Return:
-		 *   true = If success
+		 *	 true = If success
 		 * Throws:
-		 *   InconsistencyException = If the record do not exists.
+		 *	 InconsistencyException = If the record do not exists.
 		 */
 		function remove( $key )
 		{
@@ -552,14 +817,14 @@ namespace KyotoTycoon
 		/**
 		 * Replace the value of a record.
 		 * Params:
-		 *   string $key = The key of the record.
-		 *   string $value = The value of the record.
-		 *   numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
-		 *   null $xt = No expiration time is specified.
+		 *	 string $key = The key of the record.
+		 *	 string $value = The value of the record.
+		 *	 numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *	 null $xt = No expiration time is specified.
 		 * Return:
-		 *   true = If success
+		 *	 true = If success
 		 * Throws:
-		 *   InconsistencyException = If the record do not exists.
+		 *	 InconsistencyException = If the record do not exists.
 		 */
 		function replace( $key, $value, $xt = null )
 		{
@@ -577,12 +842,12 @@ namespace KyotoTycoon
 		/**
 		 * Set the value of a record.
 		 * Params:
-		 *   string $key = The key of the record.
-		 *   string $value = The value of the record.
-		 *   numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
-		 *   null $xt = No expiration time is specified.
+		 *	 string $key = The key of the record.
+		 *	 string $value = The value of the record.
+		 *	 numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
+		 *	 null $xt = No expiration time is specified.
 		 * Return:
-		 *   true = If success
+		 *	 true = If success
 		 */
 		function set( $key, $value, $xt = null )
 		{
@@ -620,11 +885,11 @@ namespace KyotoTycoon
 		/**
 		 * Send an RPC command to a KyotoTycoon server.
 		 * Params:
-		 *   string $cmd = The command.
-		 *   array,null $data = Lexical indexed array containing the input parameters.
-		 *   $return callable($result) = $when_ok = A callback function called if success.
-		 *   array $result = Lexical indexed array containing the output parameters.
-		 *   string,false $return = The returned value of the command or true if success.
+		 *	 string $cmd = The command.
+		 *	 array,null $data = Lexical indexed array containing the input parameters.
+		 *	 $return callable($result) = $when_ok = A callback function called if success.
+		 *	 array $result = Lexical indexed array containing the output parameters.
+		 *	 string,false $return = The returned value of the command or true if success.
 		 * Return:
 		 *
 		 */
