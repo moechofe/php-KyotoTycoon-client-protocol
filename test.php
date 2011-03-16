@@ -8,6 +8,7 @@ define('server_uri','http://martibox:1978');
 skip_ok();
 
 test(
+	// {{{ 'Test simple operations
 
 	'Test simple operations: get,set,clear,replace,add,append,remove', function()
 	{
@@ -30,6 +31,9 @@ test(
 		ok( $kt->remove('a') );
 	},
 
+	// }}}
+	// {{{ Test sequence operations
+
 	'Test sequence operations: increment, increment_double', function()
 	{
 		plan(7);
@@ -42,6 +46,9 @@ test(
 		is( $kt->increment('i','-2'), -2 );
 		ok( $kt->set('i','one') );
 	},
+
+	// }}}
+	// {{{ Test cas command
 
 	'Test cas command', function()
 	{
@@ -59,6 +66,9 @@ test(
 		ok( $kt->cas('b',null,'battle') );
 		is( $kt->get('b'), 'battle' );
 	},
+
+	// }}}
+	// {{{ Test match_prefix and match_regex
 
 	'Test match_prefix and match_regex', function()
 	{
@@ -82,83 +92,89 @@ test(
 		ok( false!==array_search('a.c.b', $r) );
 	},
 
-		'Test cursor functions: cur_jump, cur_step, cur_set_value, cur_remove, cur_get_key, cur_get_value, cur_get', function()
-		{
-			$kt = KyotoTycoon/API(server_uri);
-			$get = function($r) { list($k,$v) = each($r); switch($k) {
-				case'a': is( $v, 'ananas' ); break;
-				case'b': is( $v, 'banana' ); break;
-				case'c': is( $v, 'citrus' ); break; } };
+	// }}}
+	// {{{ Test cursor functions
 
-			plan(4);
-			ok( $kt->clear );
-			ok( $kt->set('a','ananas') );
-			ok( $kt->set('b','banana') );
-			ok( $kt->set('c','citrus') );
+	'Test cursor functions: cur_jump, cur_step, cur_set_value, cur_remove, cur_get_key, cur_get_value, cur_get', function()
+	{
+		$kt = KyotoTycoon/API(server_uri);
+		$get = function($r) { list($k,$v) = each($r); switch($k) {
+			case'a': is( $v, 'ananas' ); break;
+			case'b': is( $v, 'banana' ); break;
+			case'c': is( $v, 'citrus' ); break; } };
 
-			plan(5);
-			ok( $kt->cur_jump(1) );
-			for( $i=0; $i<3; $i++ ) $get( $kt->cur_get(1) );
-			except( function()use($kt){$kt->cur_get(1);}, 'OutOfBoundsException' );
+		plan(4);
+		ok( $kt->clear );
+		ok( $kt->set('a','ananas') );
+		ok( $kt->set('b','banana') );
+		ok( $kt->set('c','citrus') );
 
-			plan(7);
-			ok( $kt->cur_jump(1) );
-			for( $i=0; $i<2; $i++ ) { $get( $kt->cur_get(1,false) ); ok( $kt->cur_step(1) ); }
-			$get( $kt->cur_get(1,false) );
-			except( function()use($kt){$kt->cur_step(1);}, 'OutOfBoundsException' );
+		plan(5);
+		ok( $kt->cur_jump(1) );
+		for( $i=0; $i<3; $i++ ) $get( $kt->cur_get(1) );
+		except( function()use($kt){$kt->cur_get(1);}, 'OutOfBoundsException' );
 
-			plan(11);
-			ok( $kt->cur_jump(1) );
-			for( $i=0; $i<3; $i++ ) $get( array($kt->cur_get_key(1,false) => $kt->cur_get_value(1,true) ) );
-			for( $i=0; $i<3; $i++ ) { ok( $kt->cur_step_back(1) ); $get( array($kt->cur_get_key(1,false) => $kt->cur_get_value(1,false) ) ); }
-			except( function()use($kt){$kt->cur_step_back(1);}, 'OutOfBoundsException' );
+		plan(7);
+		ok( $kt->cur_jump(1) );
+		for( $i=0; $i<2; $i++ ) { $get( $kt->cur_get(1,false) ); ok( $kt->cur_step(1) ); }
+		$get( $kt->cur_get(1,false) );
+		except( function()use($kt){$kt->cur_step(1);}, 'OutOfBoundsException' );
 
-			plan(10);
-			ok( $kt->cur_jump_back(1) );
-			for( $i=0; $i<2; $i++ ) { $get( $kt->cur_get(1,false) ); ok( $kt->cur_remove(1) ); ok( $kt->cur_step_back(1) ); }
-			$get( $kt->cur_get(1,false) ); ok( $kt->cur_remove(1) );
-			except( function()use($kt){$kt->cur_step_back(1);}, 'OutOfBoundsException' );
-		},
+		plan(11);
+		ok( $kt->cur_jump(1) );
+		for( $i=0; $i<3; $i++ ) $get( array($kt->cur_get_key(1,false) => $kt->cur_get_value(1,true) ) );
+		for( $i=0; $i<3; $i++ ) { ok( $kt->cur_step_back(1) ); $get( array($kt->cur_get_key(1,false) => $kt->cur_get_value(1,false) ) ); }
+		except( function()use($kt){$kt->cur_step_back(1);}, 'OutOfBoundsException' );
 
-		'Test fluent and quick interface', function()
-		{
-			$kt = kt(server_uri);
-			isnull( $kt->c );
-			truly( $kt->clear->a('ananas')->bat('battle')->ban('banana')->c('citrus'), $kt );
-			is( $kt->a, 'ananas' );
-			is( $kt->ban, 'banana' );
-			is( $kt->bat, 'battle' );
-			is( $kt->c, 'citrus' );
-			foreach( $kt->begin('ba') as $k => $v )
-				is( $v, $k=='ban'?'banana':'battle' );
-			foreach( $kt->search('.*a.*') as $k => $v ) switch( $k ) {
-				case 'a': is( $v, 'ananas' ); break;
-				case 'ban': is( $v, 'banana' ); break;
-				case 'bat': is( $v, 'battle' ); break; }
-			ok( isset($kt->c) );
-			unset( $kt->c );
-			isnull( $kt->c );
-			notok( isset($kt->c) );
-			foreach( $kt->forward('ban') as $k => $v )
-				is( $v, $k=='ban'?'banana':'battle' );
-			foreach( $kt->backward('ban') as $k => $v )
-				is( $v, $k=='ban'?'banana':'ananas' );
-			is( $kt->inc('i'), 1 ); 
-			is( $kt->inc('i',2), 3 ); 
-			is( $kt->inc('f',0.1), 0.1 );
-			is( $kt->inc('f',0.2), 0.3 );
-			is( $kt->set('a','akira')->cat('a',' kurozawa')->get('a'), 'akira kurozawa' );
-			notok( $kt->add('a','alien') );
-			ok( $kt->rep('a','alien') );
-			ok( $kt->del('a') );
-			notok( $kt->del('a') );
-			notok( $kt->rep('a','alien') );
-			ok( $kt->add('a','alien') );
-			notok( $kt->cas('a','ananas','akira') );
-			notok( $kt->cas('a','alien','akira') );
-			from(&
-			to(&
-		}
+		plan(10);
+		ok( $kt->cur_jump_back(1) );
+		for( $i=0; $i<2; $i++ ) { $get( $kt->cur_get(1,false) ); ok( $kt->cur_remove(1) ); ok( $kt->cur_step_back(1) ); }
+		$get( $kt->cur_get(1,false) ); ok( $kt->cur_remove(1) );
+		except( function()use($kt){$kt->cur_step_back(1);}, 'OutOfBoundsException' );
+	},
+
+	// }}}
+	// {{{ Test fluent and quick interface
+
+	'Test fluent and quick interface', function()
+	{
+		$kt = kt(server_uri);
+		isnull( $kt->c );
+		truly( $kt->clear->a('ananas')->bat('battle')->ban('banana')->c('citrus'), $kt );
+		is( $kt->a, 'ananas' );
+		is( $kt->ban, 'banana' );
+		is( $kt->bat, 'battle' );
+		is( $kt->c, 'citrus' );
+		foreach( $kt->begin('ba') as $k => $v )
+			is( $v, $k=='ban'?'banana':'battle' );
+		foreach( $kt->search('.*a.*') as $k => $v ) switch( $k ) {
+			case 'a': is( $v, 'ananas' ); break;
+			case 'ban': is( $v, 'banana' ); break;
+			case 'bat': is( $v, 'battle' ); break; }
+		ok( isset($kt->c) );
+		unset( $kt->c );
+		isnull( $kt->c );
+		notok( isset($kt->c) );
+		foreach( $kt->forward('ban') as $k => $v )
+			is( $v, $k=='ban'?'banana':'battle' );
+		foreach( $kt->backward('ban') as $k => $v )
+			is( $v, $k=='ban'?'banana':'ananas' );
+		is( $kt->inc('i'), 1 );
+		is( $kt->inc('i',2), 3 );
+		is( $kt->inc('f',0.1), 0.1 );
+		is( $kt->inc('f',0.2), 0.3 );
+		is( $kt->set('a','akira')->cat('a',' kurozawa')->get('a'), 'akira kurozawa' );
+		notok( $kt->add('a','alien') );
+		ok( $kt->rep('a','alien') );
+		ok( $kt->del('a') );
+		notok( $kt->del('a') );
+		notok( $kt->rep('a','alien') );
+		ok( $kt->add('a','alien') );
+		notok( $kt->cas('a','ananas','akira') );
+		notok( $kt->cas('a','alien','akira') );
+		from(&
+		to(&
+	}
 
 );
 
