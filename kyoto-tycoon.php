@@ -601,10 +601,21 @@ namespace KyotoTycoon
 		private $keepalive = 30;
 		private $timeout = 3;
 
+		// Contain all connection parameters in one URI.
 		private $uri = null;
+
+		// The hostname or the IP of the server.
 		private $host = null;
+
+		// The port of the server.
 		private $port = null;
+
+		// The name or the ID of the database.
 		private $base = null;
+
+		private $content_type = null;
+
+		private $encode = null;
 
 		function __construct( $uri = 'http://localhost:1978' )
 		{
@@ -613,6 +624,18 @@ namespace KyotoTycoon
 			$this->host = parse_url( $uri, PHP_URL_HOST );
 			$this->port = parse_url( $uri, PHP_URL_PORT );
 			$this->base = trim( parse_url( $uri, PHP_URL_PATH ), '/' );
+		}
+
+		function use_base64()
+		{
+			$this->content_type = 'Content-Type: text/tab-separated-values; colenc=B';
+			$this->encode = function( $data )
+			{
+				assert('is_array($data)');
+				return implode("\r\n", array_map( function($k,$v) {
+					return sprintf("%s\t%s", base64_encode($k), base64_encode($v));
+				}, array_keys($data), $data ));
+			};
 		}
 
 		// }}}
