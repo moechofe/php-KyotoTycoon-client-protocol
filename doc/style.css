@@ -1,0 +1,80 @@
+body { font: 17px georgia, serif; margin: 0px; border-top: solid 41px #333; }
+div.navigation { position: fixed; top: 0px; left: 0px; width: 100%; background: #333; }
+* html body, * html { height: 100%; margin: 0px; padding: 0px; }
+* html { overflow: visible; }
+* html body { overflow: auto; border-top: none; padding-top: 71px; }
+* html div.navigation { position: absolute; top: 0px; left: 0px; width: 100%; background: #333; }
+a { font-weight: bold; color: #369 }
+a:visited { text-decoration: none; }
+div.document { margin: 30px; position: relative; }
+ul.menu { list-style: none; overflow: hidden; margin: 0px; padding: 0px 0px 0px 30px; }
+ul.menu li { float: left; margin: 14px 16px 0px 0px; font: 15px/18px sans-serif; }
+ul.menu a { color: #ffffff; text-decoration: none; display: block; padding: 5px 7px; background: #666; font-weight: normal; }
+ul.menu li.selected a { background: white; color: black; }
+ul.menu a.anchor { border-left: solid 8px white; }
+ul.menu a:hover { background: #eee; color: black; }
+ul.menu form label { float: left; color: white; padding: 5px 0px 5px 7px; background: #444; }
+ul.menu form input { border: none; font: 15px sans-serif; padding: 5px 7px 5px 0px; background: #444; color: white; }
+ul.menu li.selected label,
+ul.menu form:hover label { background: #eee; color: black; }
+ul.menu li.selected input,
+ul.menu form:hover input { background: #eee; color: black; }
+ul.menu span { display: block; padding: 5px 7px; background: white; color: black; }
+ul.menu span.discret { background: inherit; color: #ccc; }
+span.anchor { display: block; position: relative; top: -40px; }
+h3 { margin-top: 40px; }
+h2.title { background: #ddd; font: 1.3em sans-serif; padding: 3px 5px; }
+span.important { background: #f70; padding: 0px 3px; color: #fff; }
+h1 { font: 2.3em serif; border-bottom: 1px solid #666; }
+ul.main { font-size: 1.1em; background: #def; margin-left: 10%; margin-right: 10%; padding: 2px 8px 2px 24px; }
+ul.main li { line-height: 1.5em; }
+p, li, dt, dd { font: 1em sans-serif; }
+.dp-highlighter li { font: 13px/17px "lucida console", monospace !important; }
+tt { background: #ded; padding: 0px 1px; }
+small { font-size: 0.9em; }
+big, dd big { border-left: solid 8px #c33; padding-left: 8px; background: #fee; font-family: georgia, serif; }
+big small { font-size: 0.6em; font-style: italic; }
+h3 { font: 1.7em serif; margin-bottom: 0px; }
+dt { margin-top: 20px; font-weight: bold; clear: left; }
+dt tt { font-weight: normal; }
+dt dd { margin-bottom: 20px; }
+dd.api { border: solid 1px #aaa; padding: 2px 4px; float: left; font-family: monospace; }
+dd { margin-top: 4px; margin-bottom: 4px; clear: left; }
+strong.value { font-family: monospace; }
+table { border: solid 2px #999; border-collapse: collapse; }
+caption { font: 11px/15px sans-serif; }
+td, th { border: solid 1px #999; padding: 3px 5px; font: 13px/17px "lucida console", monospace; }
+th { font-weight: bold; background: #ddd; }
+pre { margin-right: 12px; border-top: solid 1px #e7e5dc; border-bottom: solid 1px #e7e5dc; padding: 3px 5px; font: 13px/13px "lucida console", monospace; }
+small.caption { font: 0.8em sans-serif; background: #e7e5dc; padding: 1px 3px; }
+small.caption + div { margin-top: 0px !important; }
+.dp-highlighter ol li { border-left-color: #666 !important; }
+ul.big { list-style: none; padding: 0px; margin: 0px; }
+ul.big li { padding: 0px; margin: 30px 0px; }
+li.player { }
+li.player div.avatar { float: left; }
+li.player div.info { margin: 10px 0px 10px 10px; float: left; }
+li.player div.info p { margin: 0px; font: 0.7em sans-serif; }
+li.player div.info span.pseudo { font-weight: bold; }
+li.player div.play { clear: left; border-left: solid 8px #ddd; }
+li.player div.play p { margin: 0px; font: 1.2em sans-serif; padding: 6px 8px; }
+li.player div.admin { border-left: solid 8px #ddd; }
+* html li.player div.admin { border-left: solid 1px #ddd; }
+li.player div.admin fieldset { background: #ddd; border: none; margin: 0px; padding: 6px 11px 13px 6px; position: relative; }
+li.player div.admin legend { background: white; font: 0.6em sans-serif; position: relative; top: -6px; left: -6px; padding: 0px 2px; }
+li.player div.admin label { font: 0.8em sans-serif; margin-right: 10px; }
+li.player div.admin input { font: 0.8em sans-serif; }
+ul.page { list-style: none; margin: 0px; padding: 0px; background: #333; height: 35px; }
+ul.page li { float: left; margin: 0px 20px 0px 0px; }
+ul.page li a { display: block; padding: 5px 8px; background: #ddd; color: black; font: bold 17px/25px sans-serif; text-decoration: none; }
+ul.page li a:hover { background: #666; color: white; }
+span.founded { background: yellow; }
+dl.chart { margin: 0px; padding: 0px; }
+dl.chart dd { background: #6b2; height: 16px; margin: 0px; padding: 0px; }
+dir { list-style: none; margin-top: 0px; margin-bottom: 0px; }
+dir li strong { font-family: "lucida console", monospace; }
+input, textarea, button { font: 17px georgia, serif; }
+dd p { margin-top: 0px; }
+p.evident { margin: 2em; }
+p.evident a.button { margin: 0px auto; font-weight: normal; display: table-cell; border; background-color: LightGreen; background-repeat: no-repeat; background-position: 0.2em center; padding: 0.2em 0.4em; border: solid 4px ForestGreen; border-radius: 20px; -moz-border-radius: 20px; -webkit-border-radius: 20px; color: DarkGreen; vertical-align: middle; }
+blockquote { margin: 0px 10px -8px 0px; position: relative; top: -14px; font-size: .8em; }

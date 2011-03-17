@@ -1,0 +1,180 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+		"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=ISO-8859-15">
+	<title>PhpKyotoTycoon - API to communicate with a KT server</title>
+	<link type="text/css" rel="stylesheet" href="SyntaxHighlighter.css"></link>
+	<link rel="stylesheet" type="text/css" href="style.css" media="all" />
+	<link rel="stylesheet" type="text/css" href="print.css" media="print" />
+</head>
+<body>
+	<div class="document">
+		<h2 class="title">PhpKyotoTycoon - API to communicate with a KT server</h2>
+		<h1><em>&laquo;&nbsp;Un outil pour les diriger tous&nbsp;&raquo;</em></h1>
+		<img src="http://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Network-server.svg/120px-Network-server.svg.png" align="right" style="margin-left:1em" />
+		<p>This tool is used to manipulate the records of a <em>Koyto Tycoon</em> server. It require a PHP5.3 version or more.Here is a list of cons and pros:&nbsp;</p>
+		<ul style="clear:left">
+			<li><strong>Two ways to work with</strong>: close to the protocol and easy to use from PHP.</li>
+			<li>Support <strong>iterator</strong> and <strong>array access</strong> to browse the records.</li>
+			<li><hr/></li>
+			<li></li>
+		</ul>
+<!--
+		Ce outil de requêtage pour <em>Oracle</em> permet envoyer des requêtes et de récupérer les résultats. Il se comporte comme une couche d'abstraction aux drivers <em>PHP</em>&nbsp;: <em>OCI8</em>, <em>SqlRelay</em> et <em>PDO_OCI</em>. Voici ses avantages&nbsp;:</p>
+		<ul style="clear:left">
+			<li><strong>Syntaxe unique</strong> quelque soit le drivers utilisé.</li>
+			<li>Syntaxe ultra <strong>courte et fluide</strong>.</li>
+			<li><strong>Gestion d'erreur</strong> par exceptions.</li>
+		</ul>
+		<span id="demarrage" class="anchor"></span>
+		<h3>Démarrage</h3>
+		<p>Ajouter dans votre fichier de configuration la ligne suivante&nbsp;:</p>
+		<pre name="code" class="php:nocontrols">require_once 'oracle-driver.php';</pre>
+		<p>Puis, récupérer une instance utilisable pour les requêtes&nbsp;:</p>
+		<pre name="code" class="php:nocontrols">$db = Oracle('oci://USER:PASS@HOST:PORT/NAME'); // pour utiliser l'extension OCI8
+$db = Oracle('relay://USER:PASS@HOST:PORT'); // pour utiliser l'extension SqlRelay</pre>
+		<p>A ce state la connexion n'est pas encore ouverte mais l'objet contient et conserve les paramètres de connexion.</p>
+		<dl>
+			<dt><tt>Oracle()</tt></dt>
+			<dd>La fonction <tt>Oracle()</tt> instancie et retourne un objet de la classe <tt>OracleDriver</tt>.</dd>
+			<dd class="api"><em>OracleDriver</em> = Oracle( <em>string</em> <strong>$uri</strong> )</dd>
+			<dd><strong class="value">$uri</strong>&nbsp;: une chaîne de caractère utilisée pous spécifier les paramètres de connexion. Le schema (<tt>oci://</tt>, <tt>relay://</tt> ou <tt>pdo://</tt>) en début de chaîne detérmine le driver utilisé (<em>OCI8</em>, <em>SqlRelay</em> ou <em>PDO_OCI</em>).</dd>
+		</dl>
+		<span id="prepare" class="anchor"></span>
+		<h3>Préparation de la requête</h3>
+		<p>La méthode <tt>query()</tt> ouvre réellement la connexion et prépare la requête. Ensuite, afin d'executer la requête et de récupérer les résultats, des méthodes et des membres sont utilisé de manières fluide pour couvrir les cas suivants&nbsp;:</p>
+		<ul>
+			<li>Récupération de <a href="#all">toutes les lignes d'un coup</a>.</li>
+			<li>Récupération <a href="#row">des lignes une par une</a>.</li>
+		</ul>
+		<dl>
+			<dt><tt>-&gt;query()</tt></dt>
+			<dd>
+				Retourne un clone de l'objet <em>OracleDriver</em> avec une requête préparer, prêt à recevoir des liasons et à etre exécuter.
+			</dd>
+			<dd class="api"><em>OracleDriver</em> <strong>$stm</strong> = Oracle-&gt;query( <em>string</em> <strong>$query</strong> [, <em>array</em> <strong>$markers</strong> = array] )</dd>
+			<dd><strong>$query</strong>&nbsp;: la requête <em>SQL</em>.</dd>
+			<dd><strong>$markers</strong>&nbsp;: un <strong>tableau associatif</strong> dont les cléfs sont les marqueurs <em>Oracle</em> et les valeures sont un des types suivants&nbsp;: <em>string</em>, <em>integer</em>, <em>float</em> ou <em>null</em>.<br/>Ce tableau permet de liéer des variables directe à la requête <em>SQL</em>. Pour plus d'information consulter la commande <a href="#in">in</a>.</dd>
+			<dd><strong>$stm</strong>&nbsp;: l'objet de la requête préparé et connecté au serveur <em>Oracle</em>.</dd>
+		</dl>
+		<p>L'objet <em>OracleDriver</em> ainsi cloné permet de ne pas interférer avec les autres requêtes et offre la possiblité d'être exécuter plusieurs fois grâce à la commande <a href="#exe">exe</a>.</p>
+		</dl>
+		<span id="all" class="anchor"></span>
+		<h3>Récupération de toutes les lignes</h3>
+		<dl>
+			<dt><tt>-&gt;all</tt><br /><tt>-&gt;all()</tt></dt>
+			<dd>
+				<p>Pour récupérer toutes les lignes du résultat&nbsp;:</p>
+				<pre name="code" class="php:nocontrols">$result = $db-&gt;query('select * from TABLE')-&gt;all;</pre>
+				<p>Pour parcourir toutes les lignes du résultat&nbsp;:</p>
+				<pre name="code" class="php:nocontrols">foreach( $db-&gt;query('select * from TABLE')-&gt;all as $row ); // &hellip;</pre>
+				<p>Pour sauter les 5 première lignes et retourner les 10 lignes du suivante&nbsp;:</blockquote>
+				<pre name="code" class="php:nocontrols">$result = $db-&gt;query('select * from TABLE')-&gt;all(5,10);</pre>
+			</dd>
+			<dd class="api"><em>array</em> <strong>$result</strong> = OracleDriver-&gt;all</dd>
+			<dd class="api"><em>array</em> <strong>$result</strong> = OracleDriver-&gt;all( [<em>integer</em> <strong>$skip</strong> = 0 [, <em>integer</em> <strong>$max</strong> = -1 ]]</dd>
+			<dd><strong>$skip</strong>&nbsp;: Un entier possitif indiquant le nombre des lignes à sauter dans le jeu du résultat.</dd>
+			<dd><strong>$max</strong>&nbsp;: Un entier possitif indiquant le nombre de lignes maximums à récupérer.<br/>Si cette valeur vaut <tt>-1</tt>, alors toutes les lignes seront retournées.</dd>
+			<dd><strong>$result</strong>&nbsp;: Un tableau contenant toutes les lignes du résultat sous forme de tableau associatif.<br/><u>Note</u>&nbsp;: si le résultat ne contient aucune ligne, <strong>$result</strong> sera un tableau vide qu'il est possible de tester&nbsp;:
+				<pre name="code" class="php:nocontrols">if( $db-&gt;query('select * from table')-&gt;all ) // &hellip;</pre>
+			</dd>
+			<dd>
+				<big>N'oubliez pas que cette façon de faire récupère toutes les lignes.</big><p>Et les stockes dans la mémoire du serveur qui exécute le script. D'un autre côté, cela permet de <strong>libérer la connexion rapidement</strong> si besoin avec le commande <a href="#close">close</a>.</p>
+			</dd>
+			<dd>
+			</dd>
+		</dl>
+		<span id="row" class="anchor"></span>
+		<h3>Récupération des lignes une par une</h3>
+		<dl>
+			<dt><tt>-&gt;row</tt></dt>
+			<dd>
+				<p>Pour récupérer un tableau associatif contenant la première lignes du résultat&nbsp;:</p>
+				<pre name="code" class="php:nocontrols">$row = $db-&gt;query('select * from TABLE where FIELD=1')-&gt;row;</pre>
+				<p>Pour récupérer un tableau associatif contenant la prochaine lignes du résultat, jusqu'a ce qu'il n'y en ais plus&nbsp;:</p>
+				<pre name="code" class="php:nocontrols">$stm = $db-&gt;query('select * from TABLE');
+while( $row = $stm-&gt;row ); // &hellip;</pre>
+			</dd>
+			<dd class="api"><em>array</em> <strong>$result</strong> = OracleDriver-&gt;row</dd>
+			<dd><strong>$result</strong>&nbsp;: Un tableau associatif contenant la prochaine ligne du résultat.</dd>
+		</dl>
+		<span id="field" class="anchor"></span>
+		<h3>Récupération des colonnes</h3>
+		<dl>
+			<dt><tt>-&gt;field</tt><br /><tt>-&gt;field()</tt></dt>
+			<dd>
+				<p>Pour récupérer la valeur d'une colonne de la première lignes du résultat&nbsp;:</p>
+				<pre name="code" class="php:nocontrols">$value = $db-&gt;query('select VALUE from TABLE where FIELD=1')-&gt;field;</pre>
+				<p>Pour récupérer la valeur d'une colonne de la prochaine lignes du résultat, jusqu'a ce qu'il n'y en ais plus&nbsp;:</p>
+				<pre name="code" class="php:nocontrols">$stm = $db-&gt;query('select VALUE from table');
+while( $value = $stm-&gt;field ); // &hellip;</pre>
+				<p>Pour récupérer la valeur d'une colonne à partir de son index&nbsp;:</p>
+				<pre name="code" class="php:nocontrols">$value = $db-&gt;query('select VALUE from TABLE where FIELD=1')-&gt;field(1);</pre>
+				<p>Pour récupérer la valeur d'une colonne à partir du nom de la colonne&nbsp;:</p>
+				<pre name="code" class="php:nocontrols">$value = $db-&gt;query('select VALUE from TABLE where FIELD=1')-&gt;field('VALUE');</pre>
+			</dd>
+			<dd class="api"><em>string|null|false</em> <strong>$result</strong> = OracleDriver-&gt;field</dd>
+			<dd class="api"><em>string|null|false</em> <strong>$result</strong> = OracleDriver-&gt;field( [<em>integer</em> <strong>$index</strong> = 1] )</dd>
+			<dd class="api"><em>string|null</em> <em>false</em> <strong>$result</strong> = OracleDriver-&gt;field( <em>string</em> <strong>$field</strong> )</dd>
+			<dd><strong>$result</strong>&nbsp;: Une chaîne de caractère ou la valeur <em>null</em>. Si il n'y as plus de ligne&nbsp;: <em>false</em> sera retourné.</dd>
+			<dd><strong>$index</strong>&nbsp;: L'index de la colonne à partir de <tt>1</tt>.</dd>
+			<dd><strong>$field</strong>&nbsp;: Le nom de la colonne.</dd>
+		</dl>
+		<span id="in" class="anchor"></span>
+		<h3>Liaison des valeurs en entrée pour la récupération</h3>
+		<dl>
+			<dt><tt>-&gt;in()</tt><br/><tt>-&gt;query()</tt><br/><tt>-&gt;<u>XXX</u>()</tt></dt>
+			<dd>
+				<p>Pour liéer des références à des marqueurs <em>Oracle</em>&nbsp;:</p>
+				<pre name="code" class="php:nocontrols">$f2 = 'foo'; $f3 = 'bar';
+$row = $db-&gt;query('SELECT F1 FROM T1 WHERE F2=:F2 AND F3=:F3')-&gt;in('F2',$f2)-&gt;in('F3',$f3)-&gt;row;</pre>
+				<p>Pour liées les marqueurs avec un <strong>tableau associatif</strong>&nbsp;:<br/>
+				<u>Attention</u>&nbsp;: Pas de valeur passées par références avec cette méthode. Voir la documentation de la méthode <a href="#prepare">query</a>.</p>
+				<pre name="code" class="php:nocontrols">$row = $db-&gt;query('SELECT F1 FROM T1 WHERE F2=:F2 AND F3=:F3', array('F2'=&gt;'foo','F3'=&gt;'bar'))-&gt;row;</pre>
+				<p><u>Meilleur technique</u>. Pour liée des valeurs directe à des marqueurs en utilisant les <strong>méthodes magiques</strong>&nbsp;:<br/>
+				<u>Attention</u>&nbsp;: Pas de références non plus avec cette méthode.</p>
+				<pre name="code" class="php:nocontrols">$row = $db-&gt;query('SELECT F1 FROM T1 WHERE F2=:F2 AND F3=:F3')-&gt;F2('foo')-&gt;F3('bar')-&gt;row;</pre>
+			</dd>
+			<dd class="api"><em>OracleDriver</em> <strong>$stm</strong> = OracleDriver-&gt;in( <em>string</em> <strong>$marker</strong>, <em>string|numeric|null</em> <strong>$value</strong> )</dd>
+			<dd class="api"><em>OracleDriver</em> <strong>$stm</strong> = OracleDriver-&gt;<strong>$marker</strong>( <em>string|numeric|null</em> <strong>$value</strong> )</dd>
+			<dd><strong>$marker</strong>&nbsp;: un chaîne de caractère correspondant au marqueur <em>Oracle</em> utiliser dans la requête.</dd>
+			<dd><strong>$value</strong>&nbsp;: une variable passé par référence dont la valeurs doit être de type&nbsp;: <em>string</em>, <em>integer</em>, <em>float</em> ou <em>null</em>.</dd>
+			<dd><strong>$stm</strong>&nbsp;: l'objet de la requête préparé et connecté au serveur <em>Oracle</em>.</dd>
+		</dl>
+		<h3>Liaison des colonnes en sortie pour la récupération</h3>
+		<dl>
+			<dt><tt>-&gt;define()</tt></dt>
+			<dd>
+				<p>Pour liéer des références à des colonnes <em>Oracle</em>&nbsp;:</p>
+				<pre name="code" class="php:nocontrols">$f1 = $f2 = null;
+$stm = $db-&gt;query('SELECT F1,F2 FROM T1')-&gt;define('F1',$f1)-&gt;define('F2',$f2);
+while( $stm-&gt;fetch )
+	var_dump( $f1, $f2 );</pre>
+			</dd>
+		</dl>
+
+		<span id="todos" class="anchor"></span>
+		<h3>Liste des choses à faire</h3>
+		<dl>
+			<dt>LOB</dt>
+			<dd>Développer un mecanisme interne pour gérer les <em>Large Object</em> de façon transparente à la manière de <em>SqlRelay</em>.</dd>
+		</dl>
+		<script language="javascript" src="shCore.js"></script>
+		<script language="javascript" src="shBrushPhp.js"></script>
+		<script language="javascript">
+			dp.SyntaxHighlighter.HighlightAll('code');
+		</script>
+	</div>
+	<div class="navigation">
+		<ul class="menu">
+			<li><a class="anchor" href="#demarrage">Démarrage</a></li>
+			<li><a class="anchor" href="#all">Toutes les lignes</a></li>
+			<li><a class="anchor" href="#row">Ligne par ligne</a></li>
+			<li><a class="anchor" href="#field">Colonne</a></li>
+		</ul>
+	-->
+	</div>
+</body>
+</html>
