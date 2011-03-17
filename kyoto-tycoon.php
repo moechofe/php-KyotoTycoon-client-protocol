@@ -80,11 +80,21 @@ namespace KyotoTycoon
 	/**
 	 * Fluent and quick user interface
 	 */
-	final class UI implements Iterator
+	final class UI implements \Iterator
 	{
+		// The API object used to send command.
 		private $api = null;
 
+		// Indicate if OutOfBoundsException should be throw instead of returning null.
+		private $outofbound = false;
+
+		// Indicate if RuntimeException should be throw instead of returning false.
+		private $runtime = true;
+
+		// Used to store the prefixe before initiate the process of browsing the records.
 		private $prefix = null;
+
+
 		private $regex = null;
 		private $max = null;
 		private $num = null;
@@ -94,9 +104,7 @@ namespace KyotoTycoon
 		private $cursor = null;
 		private $startkey = null;
 
-		/**
- 		 * Maintain a list of all used Kyoto Tycoon cursor (CUR).
-		 */
+ 		// Maintain a list of all used Kyoto Tycoon cursor (CUR).
 		static $cursors = array();
 
 		// {{{ __construct(), __clone()
@@ -104,7 +112,16 @@ namespace KyotoTycoon
 		function __construct( $uri = 'http://localhost:1978' )
 		{
 			assert('is_array(parse_url($uri))');
-			$this->api = new API( $uri
+			$this->api = new API( $uri );
+		}
+
+		function __destruct()
+		{
+			if( ! is_null($this->cursor) )
+			{
+				assert('is_integer($this->cursor)');
+				unset(self::$cursors[$this->cursor]);
+			}
 		}
 
 		function __clone()
@@ -138,13 +155,13 @@ namespace KyotoTycoon
 
 		function __isset( $key )
 		{
-			assert('preg_match("/^[\w_]+$/",$property)');
+			assert('preg_match("/^[\w_]+$/",$key)');
 			return is_string( $this->get($key) );
 		}
 
 		function __unset( $key )
 		{
-			assert('preg_match("/^[\w_]+$/",$property)');
+			assert('preg_match("/^[\w_]+$/",$key)');
 			$this->del($key);
 		}
 
@@ -173,8 +190,8 @@ namespace KyotoTycoon
 		{
 			assert('is_string($key)');
 			try { return $this->api->get($key,$xt); }
-			catch( OutOfBoundsException $e ); { return null; }
-			catch( RuntimeException $e ); { return false; }
+			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return null; }
+			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
 		}
 
 		/**
@@ -193,8 +210,8 @@ namespace KyotoTycoon
 			assert('is_string($key)');
 			$xt = null;
 			try { $this->api->get($key,$xt); return $xt; }
-			catch( OutOfBoundsException $e ); { return null; }
-			catch( RuntimeException $e ); { return false; }
+			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return null; }
+			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
 		}
 
 		/**
@@ -205,6 +222,7 @@ namespace KyotoTycoon
 		 *	 numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
 		 *	 null $xt = No expiration time is specified.
 		 * Return:
+		 *   false = If an error ocurred.
 		 *	 UI = The object itseft.
 		 */
 		function set( $key, $value, $xt = null )
@@ -213,7 +231,7 @@ namespace KyotoTycoon
 			assert('is_string($value)');
 			assert('is_null($xt) or is_numeric($xt)');
 			try { $this->api->set($key,$value,$xt); return $this; }
-			catch( RuntimeException $e ); { return false; }
+			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
 		}
 
 		function inc( $key, $num = 1, $xt = null )
@@ -228,7 +246,7 @@ namespace KyotoTycoon
 				else
 					return $this->api->increment_double( $key, $num, $xt );
 			}
-			catch( OutOfBoundsException $e ); { return null; }
+			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return null; }
 		}
 
 		/**
@@ -239,16 +257,16 @@ namespace KyotoTycoon
 		 *	 numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
 		 *	 null $xt = No expiration time is specified.
 		 * Return:
-		 *	 true = If success.
-		 *	 false = If an error ocurred.
+		 *   true = If success.
+		 *   false = If an error ocurred.
 		 */
 		function cat( $key, $value, $xt = null )
 		{
 			assert('is_string($key)');
 			assert('is_string($value)');
 			assert('is_null($xt) or is_numeric($xt)');
-			try { return $this->api->append($key,$value,$xt); }
-			catch( RuntimeException $e ); { return false; }
+			try { $this->api->append($key,$value,$xt); return $this; }
+			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
 		}
 
 		/**
@@ -269,8 +287,8 @@ namespace KyotoTycoon
 			assert('is_string($value)');
 			assert('is_null($xt) or is_numeric($xt)');
 			try { return $this->api->add($key,$value,$xt); }
-			catch( OutOfBoundsException $e ); { return null; }
-			catch( RuntimeException $e ); { return false; }
+			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return null; }
+			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
 		}
 
 		/**
@@ -291,8 +309,8 @@ namespace KyotoTycoon
 			assert('is_string($value)');
 			assert('is_null($xt) or is_numeric($xt)');
 			try { return $this->api->replace($key,$value,$xt); }
-			catch( OutOfBoundsException $e ); { return null; }
-			catch( RuntimeException $e ); { return false; }
+			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return null; }
+			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
 		}
 
 		/**
@@ -308,8 +326,8 @@ namespace KyotoTycoon
 		{
 			assert('is_string($key)');
 			try { $this->api->remove($key); return $this; }
-			catch( OutOfBoundsException $e ); { return null; }
-			catch( RuntimeException $e ); { return false; }
+			catch( \OutOfBoundsException $e ) { return null; }
+			catch( \RuntimeException $e ) { return false; }
 		}
 
 		/**
@@ -334,8 +352,8 @@ namespace KyotoTycoon
 			assert('is_string($nval) or is_null($nval)');
 			assert('is_null($xt) or is_numeric($xt)');
 			try { return $this->api->cas($key,$oval,$nval,$xt); }
-			catch( OutOfBoundsException $e ) { return null; }
-			catch( RuntimeException $e ); { return false; }
+			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return null; }
+			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
 		}
 
 		// }}}
@@ -389,39 +407,39 @@ namespace KyotoTycoon
 		 */
 		function rewind()
 		{
-			$this->record = null;
 			// If prefix is set, then retrieve the list of keys begin with this prefix.
 			if( ! is_null($this->prefix) )
-				$this->keys = $this->match_prefix( $this->prefix, $this->limit, $this->num );
+				$this->keys = $this->api->match_prefix( $this->prefix, $this->limit, $this->num );
 			// Else, if regex is set, then retrieve the list of keys that match this regex.
 			elseif( ! is_null($this->regex) )
-				$this->keys = $this->match_regex( $this->regex, $this->limit, $this->num );
+				$this->keys = $this->api->match_regex( $this->regex, $this->limit, $this->num );
 			// Else, the cursor will be use
 			else
 			{
 				// If no cursor was set, the create a new one. It need to be uniq for each cURL session.
 				if( is_null($this->cursor) )
 				{
-					if( ! $cursor = end($this->cursors) ) $this->cursor = 1;
+					if( ! $cursor = end(self::$cursors) ) $this->cursor = 1;
 					else $this->cursor = $cursor+1;
-					$this->cursors[$this->cursor] = $this->cursor;
+					self::$cursors[$this->cursor] = $this->cursor;
 				}
 				var_dump( "cursor: {$this->cursor}" );
 				// Now set the position of the cursor.
 				try
 				{
+					assert('is_bool($this->backward)');
 					if( $this->backward )
 						$this->api->cur_jump_back( $this->cursor, $this->startkey );
 					else
 						$this->api->cur_jump( $this->cursor, $this->startkey );
 				}
-				catch( OutOfBoundsException $e; ) {}
+				catch( \OutOfBoundsException $e ) {}
 			}
 		}
 
 		function current()
 		{
-			if( ! is_null($this->prefix) or is_null($this->regex) )
+			if( ! is_null($this->prefix) or ! is_null($this->regex) )
 			{
 				assert('is_array($this->keys)');
 				return current($this->keys);
@@ -437,7 +455,7 @@ namespace KyotoTycoon
 
 		function key()
 		{
-			if( ! is_null($this->prefix) or is_null($this->regex) )
+			if( ! is_null($this->prefix) or ! is_null($this->regex) )
 			{
 				assert('is_array($this->keys)');
 				return key($this->keys);
@@ -453,7 +471,7 @@ namespace KyotoTycoon
 
 		function next()
 		{
-			if( ! is_null($this->prefix) or is_null($this->regex) )
+			if( ! is_null($this->prefix) or ! is_null($this->regex) )
 			{
 				assert('is_array($this->keys)');
 				next($this->keys);
@@ -461,24 +479,42 @@ namespace KyotoTycoon
 			elseif( ! is_null($this->cursor) )
 			{
 				try { $this->api->cur_step($this->cursor); }
-				catch( OutOfBoundsException $e ) {}
+				catch( \OutOfBoundsException $e ) {}
 			}
 		}
 
 		function valid()
 		{
-			if( ! is_null($this->prefix) or is_null($this->regex) )
+			if( ! is_null($this->prefix) or ! is_null($this->regex) )
 			{
+				var_dump($this);
 				assert('is_array($this->keys)');
 				return current($this->keys);
 			}
 			elseif( ! is_null($this->cursor) )
 			{
 				try { $this->record = $this->api->cur_get($this->cursor,false); return $this->record; }
-				catch( OutOfBoundsException $e ) { return false; }
+				catch( \OutOfBoundsException $e ) { return false; }
 			}
 			else
 				return false;
+		}
+
+		// }}}
+		// {{{ to(), from()
+
+		function to( $key, &$value )
+		{
+			assert('is_string($key)');
+			$value = $this->get($key);
+			return $this;
+		}
+
+		function from( $key, &$value = null )
+		{
+			assert('is_string($key)');
+			$this->set($key,$value);
+			return $this;
 		}
 
 		// }}}
@@ -646,6 +682,7 @@ namespace KyotoTycoon
 			if( ! $step ) unset($step); else $step = (string)$step;
 			$CUR = (string)$CUR;
 			return $this->rpc( 'cur_get', compact('CUR','step'), function($result) {
+				var_dump( $result );
 				return array($result['key']=>$result['value']);
 			} );
 		}
