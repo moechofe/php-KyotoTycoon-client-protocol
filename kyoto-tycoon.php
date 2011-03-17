@@ -613,8 +613,6 @@ namespace KyotoTycoon
 		// The name or the ID of the database.
 		private $base = null;
 
-		private $content_type = null;
-
 		private $encode = null;
 
 		function __construct( $uri = 'http://localhost:1978' )
@@ -624,11 +622,11 @@ namespace KyotoTycoon
 			$this->host = parse_url( $uri, PHP_URL_HOST );
 			$this->port = parse_url( $uri, PHP_URL_PORT );
 			$this->base = trim( parse_url( $uri, PHP_URL_PATH ), '/' );
+			$this->use_form_url();
 		}
 
-		function use_base64()
+		function use_tab_base64()
 		{
-			$this->content_type = 'Content-Type: text/tab-separated-values; colenc=B';
 			$this->encode = function( $data )
 			{
 				assert('is_array($data)');
@@ -636,6 +634,53 @@ namespace KyotoTycoon
 					return sprintf("%s\t%s", base64_encode($k), base64_encode($v));
 				}, array_keys($data), $data ));
 			};
+			curl_setopt($this->curl(), CURLOPT_HTTPHEADER, array('Content-type: text/tab-separated-values; colenc=B'));
+		}
+
+		function use_tab_quoted()
+		{
+			$this->encode = function( $data )
+			{
+				assert('is_array($data)');
+				return implode("\r\n", array_map( function($k,$v) {
+					return sprintf("%s\t%s", quoted_printable_encode($k), quoted_printable_encode($v));
+				}, array_keys($data), $data ));
+			};
+			curl_setopt($this->curl(), CURLOPT_HTTPHEADER, array('Content-type: text/tab-separated-values; colenc=Q'));
+		}
+
+		function use_tab_url()
+		{
+			$this->encode = function( $data )
+			{
+				assert('is_array($data)');
+				return implode("\r\n", array_map( function($k,$v) {
+					return sprintf("%s\t%s", urlencode($k), urlencode($v));
+				}, array_keys($data), $data ));
+			};
+			curl_setopt($this->curl(), CURLOPT_HTTPHEADER, array('Content-type: text/tab-separated-values; colenc=U'));
+		}
+
+		function use_tab()
+		{
+			$this->encode = function( $data )
+			{
+				assert('is_array($data)');
+				return implode("\r\n", array_map( function($k,$v) {
+					return sprintf("%s\t%s", str_replace($k,"\r\n\t",''), str_replace($v,"\r\n\t",''));
+				}, array_keys($data), $data ));
+			};
+			curl_setopt($this->curl(), CURLOPT_HTTPHEADER, array('Content-type: text/tab-separated-values'));
+		}
+
+		function use_form_url()
+		{
+			$this->encode = function( $data )
+			{
+				assert('is_array($data)');
+				return http_build_query($data);
+			};
+			curl_setopt($this->curl(), CURLOPT_HTTPHEADER, array('Content-type: application/x-www-form-urlencoded'));
 		}
 
 		// }}}
@@ -1125,7 +1170,6 @@ namespace KyotoTycoon
 			{
 				$curl = curl_init();
 				curl_setopt_array($curl, array(
-					CURLOPT_HTTPHEADER => array('Content-Type: text/tab-separated-values; colenc=B'),
 					CURLOPT_POST => true,
 					CURLOPT_RETURNTRANSFER => true,
 					CURLOPT_CONNECTTIMEOUT => $this->timeout,
@@ -1147,18 +1191,18 @@ namespace KyotoTycoon
 		 */
 		private function rpc( $cmd, $data = null, $when_ok = null )
 		{
+			static $encode = null; if( is_null($encode) ) $encode = &$this->encode;
 			assert('in_array($cmd,array("add","append","cas","clear","cur_delete","cur_get","cur_get_key","cur_get_value","cur_jump","cur_jump_back","cur_set_value","cur_step","cur_step_back","cur_remove","echo","get","get_bulk","increment","increment_double","match_prefix","match_regex","play_script","remove","remove_bulk","replace","report","set","set_bulk","status","synchronize","tune_replication","vacuum"))');
 			assert('is_null($data) or count($data)==count(array_filter(array_keys($data),"is_string"))');
 			assert('is_null($data) or count($data)==count(array_filter($data,"is_string"))');
 			assert('is_callable($when_ok) or is_null($when_ok)');
 
 			if( is_array($data) )
-				$post = implode("\r\n", array_map( function($k,$v) {
-					return sprintf("%s\t%s", base64_encode($k), base64_encode($v));
-				}, array_keys($data), $data ));
+				$post = $encode($data);
 			else
 				$post = '';
 			unset($data);
+			assert('is_string($post)');
 
 			curl_setopt($this->curl(), CURLOPT_URL, "{$this->uri}/rpc/{$cmd}" );
 			curl_setopt($this->curl(), CURLOPT_POSTFIELDS, $post);
