@@ -11,7 +11,7 @@ Short example using the UI:
 	$kt->kt('http://localhost:1978');
 	// Setting records
 	$kt->set('日本','東京')
-		 ->set('france','paris');
+	   ->set('france','paris');
 	// Getting a record
 	$city = $kt->get('日本');
 	$city = $kt->france;
