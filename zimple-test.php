@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Simple unit tests tool inspired by Test::More from perl
  */
@@ -430,7 +429,7 @@ function isnotnull( $test, $msg = 'Shouldn\'t be null' )
 }
 
 // }}}
-// {{{ compare, diag, fail, pass, fault, result, report, plan, test
+// {{{ compare, diag, fail, pass, fault, result, skip_ok, dont_skip_ok, report, plan, test
 
 /**
  * Test a value with a particular operator
@@ -472,6 +471,12 @@ function compare( $test, $operator, $expected, $msg )
 		ob_start(); var_dump($expected); $expected = preg_replace('/\s+/',' ',ob_get_clean());
 		diag( sprintf('#  obtained: %s %s', str_repeat(' ',strlen($operator)), $test) );
 		diag( sprintf('#  expected: %s %s', $operator, $expected) );
+		if( extension_loaded('xdebug') )
+		{
+			list($call) = array_slice(xdebug_get_function_stack(),-2,1);
+			if( in_array($call['function'],array('ok','notok')) and ! empty($call['file']) and ! empty($call['line']) )
+				diag( sprintf('#  at line: %s of file: %s', $call['line'], $call['file']) );
+		}
 	}
 	return $ok;
 }
