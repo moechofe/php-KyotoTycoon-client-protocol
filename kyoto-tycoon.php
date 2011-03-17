@@ -14,19 +14,26 @@ namespace
 {
 
 	/**
-	 * Return an API object ready to send command to a KyotoTycoon server.
+	 * Return an UI object ready to send command to a KyotoTycoon server.
 	 * Params:
-	 *	 string $uri = The URI of the KyotoTycoon server
+	 *	 string $uri = The URI of the KyotoTycoon server.
 	 * Return:
 	 *	 KyotoTycoon\UI = The User Interface object.
+	 * Set the connection parameters:
 	 * ----
-	 * $kt = kt();
+	 * $kt = kt(); // Default parameters is: localhost:1978 and the first loaded by the server.
+	 * $kt = kt('http://kt.local:1979/user.kch');
 	 * ----
-	 * Get the expiration time of a record.
+	 * Set and get value of the records:
 	 * ----
-	 * $kt = kt();
+	 * $kt['japan'] = 'tokyo';
+	 * $kt['france'] = 'paris';
+	 * var_dump( $kt['japan'], $kt['france'] );
+	 * ----
+	 * Set and get the expiration time of a record.
+	 * ----
 	 * $kt->set('a','ananas',2);
-	 * var_dump( $kt->gxt('a');
+	 * var_dump( $kt->gxt('a') );
 	 * ----
 	 */
 	function kt( $uri = 'http://localhost:1978' )
@@ -585,7 +592,7 @@ namespace KyotoTycoon
 
 	/**
 	 * The application programming interface (API) for KyotoTycoon.
-	 * Send RPC request for now.
+	 * Send RPC command with a keepalive connection.
 	 */
 	final class API
 	{
