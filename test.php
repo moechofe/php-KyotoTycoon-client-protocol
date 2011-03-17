@@ -209,6 +209,25 @@ test(
 		$c = 'citrus';
 		truly( $kt->to('a',$a)->from('c',$c), $kt );
 		is( $kt->c, $c );
+	},
+
+	// }}}
+	// {{{ Test ArrayAccess
+
+	'Test ArrayAccess', function()
+	{
+		plan(1);
+		$kt = kt(server_uri);
+		ok( $kt->clear );
+		$kt['a'] = 'ananas';
+		$kt['b'] = 'banana';
+		$kt['c'] = 'citrus';
+		is( $kt['a'], 'ananas' );
+		is( $kt['b'], 'banana' );
+		is( $kt['c'], 'citrus' );
+		ok( isset($kt['a']) );
+		unset($kt['a']);
+		notok( isset($kt['a']) );
 	}
 
 	// }}}
