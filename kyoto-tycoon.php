@@ -78,10 +78,13 @@ namespace KyotoTycoon
 	// }}}
 
 	/**
-	 * Fluent and quick user interface
+	 * Fluent and quick user interface (UI) for the KyotoTycoon API.
+	 *
 	 */
-	final class UI implements \Iterator
+	final class UI implements \Iterator, \ArrayAccess
 	{
+		// {{{ ---properties
+
 		// The API object used to send command.
 		private $api = null;
 
@@ -94,18 +97,34 @@ namespace KyotoTycoon
 		// Used to store the prefixe before initiate the process of browsing the records.
 		private $prefix = null;
 
+		// Used to store the regex before intitiate the process of browsing the records.
 		private $regex = null;
+
+		// Indicate the maximum number of keys returned by match_prefix and match_regex operations.
 		private $max = null;
+
+		// Used to store the retreived number of records founds with match_prefix and match_regex operations.
 		private $num = null;
+
+		// Used to store all the keys returned by match_prefix and match_regex operations.
 		private $keys = null;
+
+		// Used to store temporally the key and the value of a retrieved records during any browse operations.
 		private $record = null;
+
+		// Indicate the direction of the browsing operation.
 		private $backward = null;
+
+		// Set to store the current used cursor (CUR).
 		private $cursor = null;
+
+		// Indiquate the first key of a browsing operation.
 		private $startkey = null;
 
  		// Maintain a list of all used Kyoto Tycoon cursor (CUR).
 		static $cursors = array();
 
+		// }}}
 		// {{{ __construct(), __clone()
 
 		function __construct( $uri = 'http://localhost:1978' )
@@ -141,32 +160,48 @@ namespace KyotoTycoon
 
 		function __get( $property )
 		{
-			assert('preg_match("/^[\w_]+$/",$property)');
+			assert('is_string($property)');
 			switch( $property )
 			{
 			case 'clear':
 				$this->api->clear;
 				return $this;
+			case 'outofbound_throw_exception':
+				$this->outofbound = true;
+				return $this;
+			case 'outofbound_return_null':
+				$this->outofbound = false;
+				return $this;
+			case 'runtime_throw_exception':
+				$this->runtime = true;
+				return $this;
+			case 'runtime_return_false':
+				$this->runtime = false;
+				return $this;
 			default:
-				return $this->get($property);
+				try { return $this->api->get($key,$xt); }
+				catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return null; }
+				catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
 			}
 		}
 
 		function __isset( $key )
 		{
-			assert('preg_match("/^[\w_]+$/",$key)');
-			return is_string( $this->get($key) );
+			assert('is_string($key)');
+			try { return is_string($this->api->get($key,$xt)); }
+			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return false; }
+			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
 		}
 
 		function __unset( $key )
 		{
-			assert('preg_match("/^[\w_]+$/",$key)');
+			assert('is_string($key)');
 			$this->del($key);
 		}
 
 		function __call( $method, $args )
 		{
-			assert('preg_match("/^[\w_]+$/",$method)');
+			assert('is_string($method)');
 			assert('is_scalar($args[0])');
 			return $this->set($method, (string)$args[0]);
 		}
@@ -221,15 +256,15 @@ namespace KyotoTycoon
 		 *	 numeric $xt = The expiration time from now in seconds. If it is negative, the absolute value is treated as the epoch time.
 		 *	 null $xt = No expiration time is specified.
 		 * Return:
+		 *   true = If success.
 		 *   false = If an error ocurred.
-		 *	 UI = The object itseft.
 		 */
 		function set( $key, $value, $xt = null )
 		{
 			assert('is_string($key)');
 			assert('is_string($value)');
 			assert('is_null($xt) or is_numeric($xt)');
-			try { $this->api->set($key,$value,$xt); return $this; }
+			try { $this->api->set($key,$value,$xt); return true; }
 			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
 		}
 
@@ -264,7 +299,7 @@ namespace KyotoTycoon
 			assert('is_string($key)');
 			assert('is_string($value)');
 			assert('is_null($xt) or is_numeric($xt)');
-			try { $this->api->append($key,$value,$xt); return $this; }
+			try { $this->api->append($key,$value,$xt); return true; }
 			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
 		}
 
@@ -324,9 +359,9 @@ namespace KyotoTycoon
 		function del( $key )
 		{
 			assert('is_string($key)');
-			try { $this->api->remove($key); return $this; }
-			catch( \OutOfBoundsException $e ) { return null; }
-			catch( \RuntimeException $e ) { return false; }
+			try { $this->api->remove($key); return true; }
+			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return null; }
+			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
 		}
 
 		/**
@@ -511,10 +546,45 @@ namespace KyotoTycoon
 		}
 
 		// }}}
+		// {{{ offsetExists(), offsetGet(), offsetSet(), offsetUnset()
+
+		function offsetExists( $offset )
+		{
+			assert('is_string($offset');
+			try { return is_string($this->api->get($key,$xt)); }
+			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return false; }
+			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
+		}
+
+		function offsetGet( $offset )
+		{
+			assert('is_string($offset');
+			try { return $this->api->get($key,$xt); }
+			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return null; }
+			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
+		}
+
+		function offsetSet( $offset, $value )
+		{
+			assert('is_string($offset');
+			assert('is_string($value)');
+			try { $this->api->set($key,$value,$xt); }
+			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; }
+		}
+
+		function offsetUnset( $offset )
+		{
+			assert('is_string($offset');
+			try { $this->api->remove($key); }
+			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e;  }
+			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; }
+		}
+
+		// }}}
 	}
 
 	/**
-	 * Main class of the API.
+	 * The application programming interface (API) for KyotoTycoon.
 	 * Send RPC request for now.
 	 */
 	final class API

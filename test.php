@@ -11,7 +11,7 @@ define('server_uri','http://martibox:1978');
 
 skip_ok();
 
-test(
+test(/*
 	// {{{ Test simple operations
 
 	'Test simple operations: get,set,clear,replace,add,append,remove', function()
@@ -168,10 +168,13 @@ test(
 
 	'Test fluent and quick interface', function()
 	{
-		plan(42);
+		plan(45);
 		$kt = kt(server_uri);
 		isnull( $kt->clear->c );
-		truly( $kt->a('ananas')->bat('battle')->ban('banana')->c('citrus'), $kt );
+		ok( $kt->a('ananas') );
+		ok( $kt->bat('battle') );
+		ok( $kt->ban('banana') );
+		ok( $kt->c('citrus') );
 		is( $kt->a, 'ananas' );
 		is( $kt->ban, 'banana' );
 		is( $kt->bat, 'battle' );
@@ -213,10 +216,10 @@ test(
 
 	// }}}
 	// {{{ Test ArrayAccess
-
+*/
 	'Test ArrayAccess', function()
 	{
-		plan(1);
+		plan(6);
 		$kt = kt(server_uri);
 		ok( $kt->clear );
 		$kt['a'] = 'ananas';
