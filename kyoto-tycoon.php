@@ -550,32 +550,32 @@ namespace KyotoTycoon
 
 		function offsetExists( $offset )
 		{
-			assert('is_string($offset');
-			try { return is_string($this->api->get($key,$xt)); }
+			assert('is_string($offset)');
+			try { return is_string($this->api->get($offset)); }
 			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return false; }
 			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
 		}
 
 		function offsetGet( $offset )
 		{
-			assert('is_string($offset');
-			try { return $this->api->get($key,$xt); }
+			assert('is_string($offset)');
+			try { return $this->api->get($offset); }
 			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return null; }
 			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
 		}
 
 		function offsetSet( $offset, $value )
 		{
-			assert('is_string($offset');
+			assert('is_string($offset)');
 			assert('is_string($value)');
-			try { $this->api->set($key,$value,$xt); }
+			try { $this->api->set($offset,$value); }
 			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; }
 		}
 
 		function offsetUnset( $offset )
 		{
-			assert('is_string($offset');
-			try { $this->api->remove($key); }
+			assert('is_string($offset)');
+			try { $this->api->remove($offset); }
 			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e;  }
 			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; }
 		}
