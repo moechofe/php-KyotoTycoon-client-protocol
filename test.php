@@ -5,9 +5,9 @@ require_once 'kyoto-tycoon.php';
 
 define('server_uri','http://martibox:1978');
 
-skip_ok();
+//skip_ok();
 
-test(
+test(/*
 	// {{{ Test simple operations
 
 	'Test simple operations: get,set,clear,replace,add,append,remove', function()
@@ -135,11 +135,11 @@ test(
 
 	// }}}
 	// {{{ Test fluent and quick interface
-
+ */
 	'Test fluent and quick interface', function()
 	{
 		plan(33);
-		$kt = kt(server_uri);
+		$kt = kt(server_uri);/*
 		isnull( $kt->c );
 		truly( $kt->clear->a('ananas')->bat('battle')->ban('banana')->c('citrus'), $kt );
 		is( $kt->a, 'ananas' );
@@ -155,11 +155,12 @@ test(
 		ok( isset($kt->c) );
 		unset( $kt->c );
 		isnull( $kt->c );
-		notok( isset($kt->c) );
-		foreach( $kt->forward('ban') as $k => $v )
-			is( $v, $k=='ban'?'banana':'battle' );
-		foreach( $kt->backward('ban') as $k => $v )
-			is( $v, $k=='ban'?'banana':'ananas' );
+		notok( isset($kt->c) );*/
+		foreach( $kt->forward('ban') as $k => $v ) var_dump($kt->forward('ban'),$k,$v);
+//			is( $v, $k=='ban'?'banana':'battle' );
+		foreach( $kt->backward('ban') as $k => $v ) var_dump($kt->backward('ban'),$k,$v);
+//			is( $v, $k=='ban'?'banana':'ananas' );
+/*
 		is( $kt->inc('i'), 1 );
 		is( $kt->inc('i',2), 3 );
 		is( $kt->inc('f',0.1), 0.1 );
@@ -176,7 +177,7 @@ test(
 		$a = null;
 		$c = 'citrus';
 		truly( $kt->to('a',$a)->from('c',$c), $kt );
-		is( $kt->c, $c );
+		is( $kt->c, $c );*/
 	}
 
 	// }}}
