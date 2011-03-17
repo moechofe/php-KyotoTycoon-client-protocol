@@ -9,9 +9,9 @@ require_once 'kyoto-tycoon.php';
 
 define('server_uri','http://martibox:1978');
 
-//skip_ok();
+skip_ok();
 
-test(/*
+test(
 	// {{{ Test simple operations
 
 	'Test simple operations: get,set,clear,replace,add,append,remove', function()
@@ -79,20 +79,26 @@ test(/*
 		plan(16);
 		$kt = new KyotoTycoon\API(server_uri);
 		ok( $kt->clear );
+		var_dump(__LINE__);
 		ok( $kt->set('a.b.c','ananas,banana,citrus') );
 		ok( $kt->set('a.c.b','ananas,citrus,banana') );
 		ok( $kt->set('b.c.a','banana,citrus,ananas') );
 		ok( $kt->set('b.a.c','banana,ananas,citrus') );
+		var_dump(__LINE__);
 		isanarray( $r=$kt->match_prefix('a.') );
 		has( $r, 2 );
+		var_dump(__LINE__);
 		ok( false!==array_search('a.b.c', $r) );
 		ok( false!==array_search('a.c.b', $r) );
 		isanarray( $r=$kt->match_prefix('b.') );
+		var_dump(__LINE__);
 		has( $r, 2 );
 		ok( false!==array_search('a.c.b', $r) );
 		ok( false!==array_search('b.c.a', $r) );
+		var_dump(__LINE__);
 		isanarray( $r=$kt->match_regex('\w\.c\.\w') );
 		has( $r, 1 );
+		var_dump(__LINE__);
 		ok( false!==array_search('a.c.b', $r) );
 	},
 
@@ -125,7 +131,7 @@ test(/*
 		is( $kt->cur_get(1,false), array('c'=>'citrus') );
 		except( function()use($kt){$kt->cur_step(1);}, 'OutOfBoundsException' );
 
-		plan(15);
+		plan(17);
 		ok( $kt->cur_jump(1) );
 		is( $kt->cur_get_key(1,false), 'a' );
 		is( $kt->cur_get_value(1,true), 'ananas' );
@@ -159,33 +165,33 @@ test(/*
 
 	// }}}
 	// {{{ Test fluent and quick interface
- */
+
 	'Test fluent and quick interface', function()
 	{
-		plan(33);
+		plan(42);
 		$kt = kt(server_uri);
 		isnull( $kt->clear->c );
-		truly( $kt->a('ananas')->bat('battle')->ban('banana')->c('citrus'), $kt );/*
+		truly( $kt->a('ananas')->bat('battle')->ban('banana')->c('citrus'), $kt );
 		is( $kt->a, 'ananas' );
 		is( $kt->ban, 'banana' );
 		is( $kt->bat, 'battle' );
 		is( $kt->c, 'citrus' );
+		$a = array('ban'=>'banana','bat'=>'battle');
 		foreach( $kt->begin('ba') as $k => $v )
-			is( $v, $k=='ban'?'banana':'battle' );
-		foreach( $kt->search('.*a.*') as $k => $v ) switch( $k ) {
-			case 'a': is( $v, 'ananas' ); break;
-			case 'ban': is( $v, 'banana' ); break;
-			case 'bat': is( $v, 'battle' ); break; }
+		{ is( $k, key($a) ); is( $v, current($a) ); next($a); }
+		$a = array('a'=>'ananas','ban'=>'banana','bat'=>'battle');
+		foreach( $kt->search('.*a.*') as $k => $v )
+		{ is( $k, key($a) ); is( $v, current($a) ); next($a); }
 		ok( isset($kt->c) );
 		unset( $kt->c );
 		isnull( $kt->c );
-		notok( isset($kt->c) );*/
-			foreach( $kt->backward() as $k => $v ) null;//var_dump(/*$kt->forward(),*/$k,$v);
-//		foreach( $kt->forward('ban') as $k => $v ) var_dump($kt->forward('ban'),$k,$v);
-//			is( $v, $k=='ban'?'banana':'battle' );
-//		foreach( $kt->backward('ban') as $k => $v ) var_dump($kt->backward('ban'),$k,$v);
-//			is( $v, $k=='ban'?'banana':'ananas' );
-/*
+		notok( isset($kt->c) );
+		$a = array('ban'=>'banana','bat'=>'battle');
+		foreach( $kt->forward('ban') as $k => $v )
+		{ is( $k, key($a) ); is( $v, current($a) ); next($a); }
+		$a = array('ban'=>'banana','a'=>'ananas');
+		foreach( $kt->backward('ban') as $k => $v )
+		{ is( $k, key($a) ); is( $v, current($a) ); next($a); }
 		is( $kt->inc('i'), 1 );
 		is( $kt->inc('i',2), 3 );
 		is( $kt->inc('f',0.1), 0.1 );
@@ -202,7 +208,7 @@ test(/*
 		$a = null;
 		$c = 'citrus';
 		truly( $kt->to('a',$a)->from('c',$c), $kt );
-		is( $kt->c, $c );*/
+		is( $kt->c, $c );
 	}
 
 	// }}}

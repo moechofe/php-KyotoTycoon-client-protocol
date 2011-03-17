@@ -94,7 +94,6 @@ namespace KyotoTycoon
 		// Used to store the prefixe before initiate the process of browsing the records.
 		private $prefix = null;
 
-
 		private $regex = null;
 		private $max = null;
 		private $num = null;
@@ -423,7 +422,6 @@ namespace KyotoTycoon
 					else $this->cursor = $cursor+1;
 					self::$cursors[$this->cursor] = $this->cursor;
 				}
-				var_dump( "cursor: {$this->cursor}" );
 				// Now set the position of the cursor.
 				try
 				{
@@ -439,32 +437,18 @@ namespace KyotoTycoon
 
 		function current()
 		{
-			if( ! is_null($this->prefix) or ! is_null($this->regex) )
-			{
-				assert('is_array($this->keys)');
-				return current($this->keys);
-			}
-			elseif( ! is_null($this->cursor) )
-			{
-				assert('is_array($this->record)');
+			assert('is_array($this->record)');
+			if( ! is_null($this->prefix) or ! is_null($this->regex) or ! is_null($this->cursor) )
 				return current($this->record);
-			}
 			else
 				return null;
 		}
 
 		function key()
 		{
-			if( ! is_null($this->prefix) or ! is_null($this->regex) )
-			{
-				assert('is_array($this->keys)');
-				return key($this->keys);
-			}
-			elseif( ! is_null($this->cursor) )
-			{
-				assert('is_array($this->record)');
+			assert('is_array($this->record)');
+			if( ! is_null($this->prefix) or ! is_null($this->regex) or ! is_null($this->cursor) )
 				return key($this->record);
-			}
 			else
 				return null;
 		}
@@ -478,7 +462,13 @@ namespace KyotoTycoon
 			}
 			elseif( ! is_null($this->cursor) )
 			{
-				try { $this->api->cur_step($this->cursor); }
+				try
+				{
+					if( $this->backward )
+						$this->api->cur_step_back($this->cursor);
+					else
+						$this->api->cur_step($this->cursor);
+				}
 				catch( \OutOfBoundsException $e ) {}
 			}
 		}
@@ -488,7 +478,11 @@ namespace KyotoTycoon
 			if( ! is_null($this->prefix) or ! is_null($this->regex) )
 			{
 				assert('is_array($this->keys)');
-				return current($this->keys);
+				if( current($this->keys) )
+					try { return $this->record = array( current($this->keys) => $this->get(current($this->keys)) ); }
+					catch( \OutOfBoundsException $e ) { return false; }
+				else
+					return false;
 			}
 			elseif( ! is_null($this->cursor) )
 			{
@@ -680,8 +674,7 @@ namespace KyotoTycoon
 			assert('is_bool($step) or is_null($step)');
 			if( ! $step ) unset($step); else $step = (string)$step;
 			$CUR = (string)$CUR;
-			return $this->rpc( 'cur_get', compact('CUR','step'), function($result)use($step) {
-				var_dump( $step );
+			return $this->rpc( 'cur_get', compact('CUR','step'), function($result) {
 				return array($result['key']=>$result['value']);
 			} );
 		}
