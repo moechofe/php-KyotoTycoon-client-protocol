@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Start a Kyoto Tycoon server with a TreeDB: ktserver +
+ */
+
 require_once 'zimple-test.php';
 require_once 'kyoto-tycoon.php';
 
@@ -98,10 +102,6 @@ test(/*
 	'Test cursor functions: cur_jump, cur_step, cur_set_value, cur_remove, cur_get_key, cur_get_value, cur_get', function()
 	{
 		$kt = new KyotoTycoon\API(server_uri);
-		$get = function($r) { list($k,$v) = each($r); switch($k) {
-			case'a': is( $v, 'ananas' ); break;
-			case'b': is( $v, 'banana' ); break;
-			case'c': is( $v, 'citrus' ); break; } };
 
 		plan(4);
 		ok( $kt->clear );
@@ -111,25 +111,49 @@ test(/*
 
 		plan(5);
 		ok( $kt->cur_jump(1) );
-		for( $i=0; $i<3; $i++ ) $get( $kt->cur_get(1) );
+		is( $kt->cur_get(1), array('a'=>'ananas') );
+		is( $kt->cur_get(1), array('b'=>'banana') );
+		is( $kt->cur_get(1), array('c'=>'citrus') );
 		except( function()use($kt){$kt->cur_get(1);}, 'OutOfBoundsException' );
 
 		plan(7);
 		ok( $kt->cur_jump(1) );
-		for( $i=0; $i<2; $i++ ) { $get( $kt->cur_get(1,false) ); ok( $kt->cur_step(1) ); }
-		$get( $kt->cur_get(1,false) );
+		is( $kt->cur_get(1,false), array('a'=>'ananas') );
+		ok( $kt->cur_step(1) );
+		is( $kt->cur_get(1,false), array('b'=>'banana') );
+		ok( $kt->cur_step(1) );
+		is( $kt->cur_get(1,false), array('c'=>'citrus') );
 		except( function()use($kt){$kt->cur_step(1);}, 'OutOfBoundsException' );
 
-		plan(11);
+		plan(15);
 		ok( $kt->cur_jump(1) );
-		for( $i=0; $i<3; $i++ ) $get( array($kt->cur_get_key(1,false) => $kt->cur_get_value(1,true) ) );
-		for( $i=0; $i<3; $i++ ) { ok( $kt->cur_step_back(1) ); $get( array($kt->cur_get_key(1,false) => $kt->cur_get_value(1,false) ) ); }
+		is( $kt->cur_get_key(1,false), 'a' );
+		is( $kt->cur_get_value(1,true), 'ananas' );
+		is( $kt->cur_get_key(1,false), 'b' );
+		is( $kt->cur_get_value(1,true), 'banana' );
+		is( $kt->cur_get_key(1,false), 'c' );
+		is( $kt->cur_get_value(1,true), 'citrus' );
+		ok( $kt->cur_step_back(1) );
+		is( $kt->cur_get_key(1,false), 'c' );
+		is( $kt->cur_get_value(1,false), 'citrus' );
+		ok( $kt->cur_step_back(1) );
+		is( $kt->cur_get_key(1,false), 'b' );
+		is( $kt->cur_get_value(1,false), 'banana' );
+		ok( $kt->cur_step_back(1) );
+		is( $kt->cur_get_key(1,false), 'a' );
+		is( $kt->cur_get_value(1,false), 'ananas' );
 		except( function()use($kt){$kt->cur_step_back(1);}, 'OutOfBoundsException' );
 
 		plan(10);
 		ok( $kt->cur_jump_back(1) );
-		for( $i=0; $i<2; $i++ ) { $get( $kt->cur_get(1,false) ); ok( $kt->cur_remove(1) ); ok( $kt->cur_step_back(1) ); }
-		$get( $kt->cur_get(1,false) ); ok( $kt->cur_remove(1) );
+		is( $kt->cur_get(1,false), array('c'=>'citrus') );
+		ok( $kt->cur_remove(1) );
+		ok( $kt->cur_step_back(1) );
+		is( $kt->cur_get(1,false), array('b'=>'banana') );
+		ok( $kt->cur_remove(1) );
+		ok( $kt->cur_step_back(1) );
+		is( $kt->cur_get(1,false), array('a'=>'ananas') );
+		ok( $kt->cur_remove(1) );
 		except( function()use($kt){$kt->cur_step_back(1);}, 'OutOfBoundsException' );
 	},
 
@@ -139,9 +163,9 @@ test(/*
 	'Test fluent and quick interface', function()
 	{
 		plan(33);
-		$kt = kt(server_uri);/*
-		isnull( $kt->c );
-		truly( $kt->clear->a('ananas')->bat('battle')->ban('banana')->c('citrus'), $kt );
+		$kt = kt(server_uri);
+		isnull( $kt->clear->c );
+		truly( $kt->a('ananas')->bat('battle')->ban('banana')->c('citrus'), $kt );/*
 		is( $kt->a, 'ananas' );
 		is( $kt->ban, 'banana' );
 		is( $kt->bat, 'battle' );
@@ -156,9 +180,10 @@ test(/*
 		unset( $kt->c );
 		isnull( $kt->c );
 		notok( isset($kt->c) );*/
-		foreach( $kt->forward('ban') as $k => $v ) var_dump($kt->forward('ban'),$k,$v);
+			foreach( $kt->backward() as $k => $v ) null;//var_dump(/*$kt->forward(),*/$k,$v);
+//		foreach( $kt->forward('ban') as $k => $v ) var_dump($kt->forward('ban'),$k,$v);
 //			is( $v, $k=='ban'?'banana':'battle' );
-		foreach( $kt->backward('ban') as $k => $v ) var_dump($kt->backward('ban'),$k,$v);
+//		foreach( $kt->backward('ban') as $k => $v ) var_dump($kt->backward('ban'),$k,$v);
 //			is( $v, $k=='ban'?'banana':'ananas' );
 /*
 		is( $kt->inc('i'), 1 );
