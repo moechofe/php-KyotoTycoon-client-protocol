@@ -487,7 +487,6 @@ namespace KyotoTycoon
 		{
 			if( ! is_null($this->prefix) or ! is_null($this->regex) )
 			{
-				var_dump($this);
 				assert('is_array($this->keys)');
 				return current($this->keys);
 			}
@@ -681,8 +680,8 @@ namespace KyotoTycoon
 			assert('is_bool($step) or is_null($step)');
 			if( ! $step ) unset($step); else $step = (string)$step;
 			$CUR = (string)$CUR;
-			return $this->rpc( 'cur_get', compact('CUR','step'), function($result) {
-				var_dump( $result );
+			return $this->rpc( 'cur_get', compact('CUR','step'), function($result)use($step) {
+				var_dump( $step );
 				return array($result['key']=>$result['value']);
 			} );
 		}
