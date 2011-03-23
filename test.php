@@ -194,8 +194,8 @@ test(
 		is( $kt->inc('i',2), 3 );
 		is( $kt->inc('f',0.1), 0.1 );
 		is( $kt->inc('f',0.2), 0.3 );
-		is( $kt->set('a','akira') );
-		is( $kt->cat('a',' kurozawa') );
+		ok( $kt->set('a','akira') );
+		ok( $kt->cat('a',' kurozawa') );
 		is( $kt->get('a'), 'akira kurozawa' );
 		notok( $kt->add('a','alien') );
 		ok( $kt->rep('a','alien') );
