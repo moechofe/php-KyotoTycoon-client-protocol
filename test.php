@@ -76,7 +76,7 @@ test(
 
 	'Test match_prefix and match_regex', function()
 	{
-		plan(16);
+		plan(17);
 		$kt = new KyotoTycoon\API(server_uri);
 		ok( $kt->clear );
 		ok( $kt->set('a.b.c','ananas,banana,citrus') );
