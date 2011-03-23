@@ -92,8 +92,9 @@ test(
 		ok( false!==array_search('b.a.c', $r) );
 		ok( false!==array_search('b.c.a', $r) );
 		isanarray( $r=$kt->match_regex('\w\.c\.\w') );
-		has( $r, 1 );
+		has( $r, 2 );
 		ok( false!==array_search('a.c.b', $r) );
+		ok( false!==array_search('b.c.a', $r) );
 	},
 
 	// }}}
