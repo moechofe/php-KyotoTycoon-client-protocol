@@ -187,7 +187,7 @@ namespace KyotoTycoon
 				$this->runtime = false;
 				return $this;
 			default:
-				try { return $this->api->get($key,$xt); }
+				try { return $this->api->get($property,$xt); }
 				catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return null; }
 				catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
 			}
