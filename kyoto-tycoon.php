@@ -61,6 +61,7 @@ namespace KyotoTycoon
 
 	/**
 	 * Thrown when an operation is asked about a record that didn't respect all the needs.
+	 * The processing is done but the result is not fulfill the application logic.
 	 */
 	class InconsistencyException extends \OutOfBoundsException
 	{
@@ -1227,8 +1228,8 @@ namespace KyotoTycoon
 				else
 					return true;
 			case 450: throw new InconsistencyException($this->uri,$data['ERROR']);
-			case 501: var_dump($data); throw new ImplementationException($this->uri);
-			default: throw new ProtocolException($this->uri);
+			case 501: throw new ImplementationException($this->uri);
+			case 400: throw new ProtocolException($this->uri);
 			}
 		}
 

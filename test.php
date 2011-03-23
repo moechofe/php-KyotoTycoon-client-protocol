@@ -79,26 +79,20 @@ test(
 		plan(16);
 		$kt = new KyotoTycoon\API(server_uri);
 		ok( $kt->clear );
-		var_dump(__LINE__);
 		ok( $kt->set('a.b.c','ananas,banana,citrus') );
 		ok( $kt->set('a.c.b','ananas,citrus,banana') );
 		ok( $kt->set('b.c.a','banana,citrus,ananas') );
 		ok( $kt->set('b.a.c','banana,ananas,citrus') );
-		var_dump(__LINE__);
 		isanarray( $r=$kt->match_prefix('a.') );
 		has( $r, 2 );
-		var_dump(__LINE__);
 		ok( false!==array_search('a.b.c', $r) );
 		ok( false!==array_search('a.c.b', $r) );
 		isanarray( $r=$kt->match_prefix('b.') );
-		var_dump(__LINE__);
 		has( $r, 2 );
 		ok( false!==array_search('a.c.b', $r) );
 		ok( false!==array_search('b.c.a', $r) );
-		var_dump(__LINE__);
 		isanarray( $r=$kt->match_regex('\w\.c\.\w') );
 		has( $r, 1 );
-		var_dump(__LINE__);
 		ok( false!==array_search('a.c.b', $r) );
 	},
 
