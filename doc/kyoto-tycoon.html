@@ -14,12 +14,12 @@
 		<h2 class="title">PhpKyotoTycoon - API to communicate with a KT server</h2>
 		<h1><em>&laquo;&nbsp;Provided for easy and powerful programming related to database and web.&nbsp;&raquo;</em></h1>
 		<img src="http://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Network-server.svg/120px-Network-server.svg.png" align="right" style="margin-left:1em" />
-		<p>This tool is used to manipulate the records of a <em>Koyto Tycoon</em> server. It require a PHP5.3 version or more. Here is a list of cons and pros:&nbsp;</p>
+		<p>This tool is used to manipulate the records of a <em>Kyoto Tycoon</em> server. It require a PHP5.3 version or more. Here is a list of cons and pros:&nbsp;</p>
 		<ul style="clear:left">
 			<li><strong>Two ways to work with</strong>: close to the protocol and easy to use from PHP.</li>
 			<li>Support <strong>iterator</strong> and <strong>array access</strong> to browse the records.</li>
 			<li><hr/></li>
-			<li></li>
+			<li>No support for Rest and binary protocol now.</li>
 		</ul>
 		<span id="quickstart" class="anchor"></span>
 		<h3>Quick start</h3>
@@ -28,6 +28,10 @@
 		<p>Instanciate the class <tt>UI</tt> with the function <tt>kt()</tt>:&nbsp;</p>
 		<pre name="code" class="php:nocontrols">$kt = kt();</pre>
 		<p>Parameters list are discribed in the documentation of the <a href="#func_var">kt()</a> function.</p>
+		<span id="access" class="anchor"></span>
+		<h3>Accessing records</h3>
+		<p></p>
+		<pre name="code" class="php:nocontrols">$kt['France'] = 'Paris';</pre>
 
 
 <!--

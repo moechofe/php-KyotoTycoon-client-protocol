@@ -21,6 +21,6 @@ Short example using the UI:
 	echo $kt->France,PHP_EOL;
 	// Browsing records
 	foreach( $kt->forward() as $k => $v )
-	  echo "country:$k city:$v",PHP_EOL;
+		echo "country:$k city:$v",PHP_EOL;
 
 Look at the _test.php_ script for more examples.
