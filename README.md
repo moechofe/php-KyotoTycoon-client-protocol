@@ -1,7 +1,7 @@
 A PHP5.3+ API for Kyoto Tycoon
 ==============================
 
-Experimental API to communicate with a [Kyoto Tycoon](http://fallabs.com/kyototycoon/) server.
+Experimental API and UI to communicate with a [Kyoto Tycoon](http://fallabs.com/kyototycoon/) server.
 Using RPC protocol for now, but I'm plan to implement Rest and binary protocol too.
 
 Short example using the UI:
@@ -21,6 +21,6 @@ Short example using the UI:
 	echo $kt->France,PHP_EOL;
 	// Browsing records
 	foreach( $kt->forward() as $k => $v )
-  echo "country:$k city:$v",PHP_EOL;
+	  echo "country:$k city:$v",PHP_EOL;
 
 Look at the _test.php_ script for more examples.
