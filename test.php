@@ -163,7 +163,7 @@ test(
 
 	'Test fluent and quick interface', function()
 	{
-		plan(45);
+		plan(47);
 		$kt = kt(server_uri);
 		isnull( $kt->clear->c );
 		ok( $kt->a('ananas') );
@@ -194,7 +194,9 @@ test(
 		is( $kt->inc('i',2), 3 );
 		is( $kt->inc('f',0.1), 0.1 );
 		is( $kt->inc('f',0.2), 0.3 );
-		is( $kt->set('a','akira')->cat('a',' kurozawa')->get('a'), 'akira kurozawa' );
+		is( $kt->set('a','akira') );
+		is( $kt->cat('a',' kurozawa') );
+		is( $kt->get('a'), 'akira kurozawa' );
 		notok( $kt->add('a','alien') );
 		ok( $kt->rep('a','alien') );
 		ok( $kt->del('a') );
