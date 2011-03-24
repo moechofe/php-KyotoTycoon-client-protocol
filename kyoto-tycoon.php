@@ -566,7 +566,6 @@ namespace KyotoTycoon
 
 		function offsetGet( $offset )
 		{
-			var_dump(__LINE__,$offset);
 			assert('is_string($offset)');
 			try { return $this->api->get($offset); }
 			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return null; }
@@ -575,7 +574,6 @@ namespace KyotoTycoon
 
 		function offsetSet( $offset, $value )
 		{
-			var_dump(__LINE__,$offset,$value);
 			assert('is_string($offset)');
 			assert('is_string($value)');
 			try { $this->api->set($offset,$value); }
@@ -800,7 +798,6 @@ namespace KyotoTycoon
 			if( $this->DB ) $DB = $this->DB;
 			if( ! $xt ) unset($xt);
 			return $this->rpc( 'get', compact('DB','key'), function($result) use(&$xt) {
-				var_dump( $result );
 				if( isset($result['xt']) ) $xt = $result['xt'];
 				if( isset($result['value']) )
 					return $result['value'];
