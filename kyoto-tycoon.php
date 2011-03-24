@@ -102,11 +102,13 @@ namespace KyotoTycoon
 		// Indicate if RuntimeException should be throw instead of returning false.
 		private $runtime = true;
 
-		// Used to store the prefixe before initiate the process of browsing the records.
+		// Used to store the prefixe before initiate the process of browsing the keys.
 		private $prefix = null;
 
-		// Used to store the regex before intitiate the process of browsing the records.
+		// Used to store the regex before intitiate the process of browsing the keys.
 		private $regex = null;
+
+		private $just_key = false;
 
 		// Indicate the maximum number of keys returned by match_prefix and match_regex operations.
 		private $max = null;
@@ -154,6 +156,7 @@ namespace KyotoTycoon
 		{
 			$this->prefix = null;
 			$this->regex = null;
+			$this->just_key = false;
 			$this->max = null;
 			$this->num = null;
 			$this->cursor = null;
@@ -399,7 +402,7 @@ namespace KyotoTycoon
 		}
 
 		// }}}
-		// {{{ begin(), search(), forward(), backward()
+		// {{{ begin(), search(), forward(), backward(), prefix(), regex()
 
 		function begin( $prefix, $max = 0, &$num = null )
 		{
@@ -438,6 +441,30 @@ namespace KyotoTycoon
 			$stm = clone $this;
 			$stm->startkey = $key;
 			$stm->backward = true;
+			return $stm;
+		}
+
+		function prefix( $prefix, $max = 0, &$num = null )
+		{
+			assert('is_string($prefix)');
+			assert('is_numeric($max) and $max>=0 and (int)$max==$max');
+			$stm = clone $this;
+			$stm->prefix = $prefix;
+			$stm->just_key = true;
+			$stm->max = $max;
+			$stm->num = &$num;
+			return $stm;
+		}
+
+		function regex( $regex, $max = 0, &$num = null )
+		{
+			assert('is_string($regex)');
+			assert('is_numeric($max) and $max>=0 and (int)$max==$max');
+			$stm = clone $this;
+			$stm->regex = $regex;
+			$stm->just_key = true;
+			$stm->max = $max;
+			$stm->num = &$num;
 			return $stm;
 		}
 
@@ -522,7 +549,13 @@ namespace KyotoTycoon
 			{
 				assert('is_array($this->keys)');
 				if( current($this->keys) )
-					try { return $this->record = array( current($this->keys) => $this->get(current($this->keys)) ); }
+					try
+					{
+						if( $this->just_key )
+							return $this->record = array( key($this->keys) => current($this->keys) );
+						else
+							return $this->record = array( current($this->keys) => $this->get(current($this->keys)) );
+					}
 					catch( \OutOfBoundsException $e ) { return false; }
 				else
 					return false;

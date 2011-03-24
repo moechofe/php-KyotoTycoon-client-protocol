@@ -163,7 +163,7 @@ test(
 
 	'Test fluent and quick interface', function()
 	{
-		plan(47);
+		plan(52);
 		$kt = kt(server_uri);
 		isnull( $kt->clear->c );
 		ok( $kt->a('ananas') );
@@ -180,6 +180,12 @@ test(
 		$a = array('a'=>'ananas','ban'=>'banana','bat'=>'battle');
 		foreach( $kt->search('.*a.*') as $k => $v )
 		{ is( $k, key($a) ); is( $v, current($a) ); next($a); }
+		$a = array('ban'=>'banana','bat'=>'battle');
+		foreach( $kt->prefix('ba') as $k )
+		{ is( $k, key($a) ); next($a); }
+		$a = array('a'=>'ananas','ban'=>'banana','bat'=>'battle');
+		foreach( $kt->regex('.*a.*') as $k )
+		{ is( $k, key($a) ); next($a); }
 		ok( isset($kt->c) );
 		unset( $kt->c );
 		isnull( $kt->c );
