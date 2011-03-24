@@ -14,19 +14,26 @@ namespace
 {
 
 	/**
-	 * Return an API object ready to send command to a KyotoTycoon server.
+	 * Return an UI object ready to send command to a KyotoTycoon server.
 	 * Params:
-	 *	 string $uri = The URI of the KyotoTycoon server
+	 *	 string $uri = The URI of the KyotoTycoon server.
 	 * Return:
 	 *	 KyotoTycoon\UI = The User Interface object.
+	 * Set the connection parameters:
 	 * ----
-	 * $kt = kt();
+	 * $kt = kt(); // Default parameters is: localhost:1978 and the first loaded by the server.
+	 * $kt = kt('http://kt.local:1979/user.kch');
 	 * ----
-	 * Get the expiration time of a record.
+	 * Set and get value of the records:
 	 * ----
-	 * $kt = kt();
+	 * $kt['japan'] = 'tokyo';
+	 * $kt['france'] = 'paris';
+	 * var_dump( $kt['japan'], $kt['france'] );
+	 * ----
+	 * Set and get the expiration time of a record.
+	 * ----
 	 * $kt->set('a','ananas',2);
-	 * var_dump( $kt->gxt('a');
+	 * var_dump( $kt->gxt('a') );
 	 * ----
 	 */
 	function kt( $uri = 'http://localhost:1978' )
@@ -54,6 +61,7 @@ namespace KyotoTycoon
 
 	/**
 	 * Thrown when an operation is asked about a record that didn't respect all the needs.
+	 * The processing is done but the result is not fulfill the application logic.
 	 */
 	class InconsistencyException extends \OutOfBoundsException
 	{
@@ -89,7 +97,7 @@ namespace KyotoTycoon
 		private $api = null;
 
 		// Indicate if OutOfBoundsException should be throw instead of returning null.
-		private $outofbound = false;
+		private $outofbound = true;
 
 		// Indicate if RuntimeException should be throw instead of returning false.
 		private $runtime = true;
@@ -179,7 +187,7 @@ namespace KyotoTycoon
 				$this->runtime = false;
 				return $this;
 			default:
-				try { return $this->api->get($key,$xt); }
+				try { return $this->api->get($property,$xt); }
 				catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return null; }
 				catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
 			}
@@ -558,6 +566,7 @@ namespace KyotoTycoon
 
 		function offsetGet( $offset )
 		{
+			var_dump(__LINE__,$offset);
 			assert('is_string($offset)');
 			try { return $this->api->get($offset); }
 			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return null; }
@@ -566,6 +575,7 @@ namespace KyotoTycoon
 
 		function offsetSet( $offset, $value )
 		{
+			var_dump(__LINE__,$offset,$value);
 			assert('is_string($offset)');
 			assert('is_string($value)');
 			try { $this->api->set($offset,$value); }
@@ -585,19 +595,28 @@ namespace KyotoTycoon
 
 	/**
 	 * The application programming interface (API) for KyotoTycoon.
-	 * Send RPC request for now.
+	 * Send RPC command with a keepalive connection.
 	 */
 	final class API
 	{
-		// {{{ $keepalive, $timeout, $uri, $host, $post, $base, __construct()
+		// {{{ $keepalive, $timeout, $uri, $host, $post, $base, $encode, __construct()
 
 		private $keepalive = 30;
 		private $timeout = 3;
 
+		// Contain all connection parameters in one URI.
 		private $uri = null;
+
+		// The hostname or the IP of the server.
 		private $host = null;
+
+		// The port of the server.
 		private $port = null;
+
+		// The name or the ID of the database.
 		private $base = null;
+
+		private $encode = null;
 
 		function __construct( $uri = 'http://localhost:1978' )
 		{
@@ -606,6 +625,68 @@ namespace KyotoTycoon
 			$this->host = parse_url( $uri, PHP_URL_HOST );
 			$this->port = parse_url( $uri, PHP_URL_PORT );
 			$this->base = trim( parse_url( $uri, PHP_URL_PATH ), '/' );
+			$this->use_form_url();
+		}
+
+		// }}}
+		// {{{ use_tab_base64(), use_tab_quoted(), use_tab_url(), use_tab(), use_form_url()
+
+		function use_tab_base64()
+		{
+			$this->encode = function( $data )
+			{
+				assert('is_array($data)');
+				return implode("\r\n", array_map( function($k,$v) {
+					return sprintf("%s\t%s", base64_encode($k), base64_encode($v));
+				}, array_keys($data), $data ));
+			};
+			curl_setopt($this->curl(), CURLOPT_HTTPHEADER, array('Content-type: text/tab-separated-values; colenc=B'));
+		}
+
+		function use_tab_quoted()
+		{
+			$this->encode = function( $data )
+			{
+				assert('is_array($data)');
+				return implode("\r\n", array_map( function($k,$v) {
+					return sprintf("%s\t%s", quoted_printable_encode($k), quoted_printable_encode($v));
+				}, array_keys($data), $data ));
+			};
+			curl_setopt($this->curl(), CURLOPT_HTTPHEADER, array('Content-type: text/tab-separated-values; colenc=Q'));
+		}
+
+		function use_tab_url()
+		{
+			$this->encode = function( $data )
+			{
+				assert('is_array($data)');
+				return implode("\r\n", array_map( function($k,$v) {
+					return sprintf("%s\t%s", urlencode($k), urlencode($v));
+				}, array_keys($data), $data ));
+			};
+			curl_setopt($this->curl(), CURLOPT_HTTPHEADER, array('Content-type: text/tab-separated-values; colenc=U'));
+		}
+
+		function use_tab()
+		{
+			$this->encode = function( $data )
+			{
+				assert('is_array($data)');
+				return implode("\r\n", array_map( function($k,$v) {
+					return sprintf("%s\t%s", str_replace($k,"\r\n\t",''), str_replace($v,"\r\n\t",''));
+				}, array_keys($data), $data ));
+			};
+			curl_setopt($this->curl(), CURLOPT_HTTPHEADER, array('Content-type: text/tab-separated-values'));
+		}
+
+		function use_form_url()
+		{
+			$this->encode = function( $data )
+			{
+				assert('is_array($data)');
+				return http_build_query($data);
+			};
+			curl_setopt($this->curl(), CURLOPT_HTTPHEADER, array('Content-type: application/x-www-form-urlencoded'));
 		}
 
 		// }}}
@@ -719,8 +800,14 @@ namespace KyotoTycoon
 			if( $this->DB ) $DB = $this->DB;
 			if( ! $xt ) unset($xt);
 			return $this->rpc( 'get', compact('DB','key'), function($result) use(&$xt) {
+				var_dump( $result );
 				if( isset($result['xt']) ) $xt = $result['xt'];
-				return $result['value'];
+				if( isset($result['value']) )
+					return $result['value'];
+				elseif( isset($result['dmFsdWU=']) )
+					return base64_decode($result['dmFsdWU=']);
+				else
+					throw ProtocolException( $this->url );
 			} );
 		}
 
@@ -1095,7 +1182,6 @@ namespace KyotoTycoon
 			{
 				$curl = curl_init();
 				curl_setopt_array($curl, array(
-					CURLOPT_HTTPHEADER => array('Content-Type: text/tab-separated-values; colenc=B'),
 					CURLOPT_POST => true,
 					CURLOPT_RETURNTRANSFER => true,
 					CURLOPT_CONNECTTIMEOUT => $this->timeout,
@@ -1117,18 +1203,18 @@ namespace KyotoTycoon
 		 */
 		private function rpc( $cmd, $data = null, $when_ok = null )
 		{
+			static $encode = null; if( is_null($encode) ) $encode = &$this->encode;
 			assert('in_array($cmd,array("add","append","cas","clear","cur_delete","cur_get","cur_get_key","cur_get_value","cur_jump","cur_jump_back","cur_set_value","cur_step","cur_step_back","cur_remove","echo","get","get_bulk","increment","increment_double","match_prefix","match_regex","play_script","remove","remove_bulk","replace","report","set","set_bulk","status","synchronize","tune_replication","vacuum"))');
 			assert('is_null($data) or count($data)==count(array_filter(array_keys($data),"is_string"))');
 			assert('is_null($data) or count($data)==count(array_filter($data,"is_string"))');
 			assert('is_callable($when_ok) or is_null($when_ok)');
 
 			if( is_array($data) )
-				$post = implode("\r\n", array_map( function($k,$v) {
-					return sprintf("%s\t%s", base64_encode($k), base64_encode($v));
-				}, array_keys($data), $data ));
+				$post = $encode($data);
 			else
 				$post = '';
 			unset($data);
+			assert('is_string($post)');
 
 			curl_setopt($this->curl(), CURLOPT_URL, "{$this->uri}/rpc/{$cmd}" );
 			curl_setopt($this->curl(), CURLOPT_POSTFIELDS, $post);
@@ -1153,8 +1239,8 @@ namespace KyotoTycoon
 				else
 					return true;
 			case 450: throw new InconsistencyException($this->uri,$data['ERROR']);
-			case 501: var_dump($data); throw new ImplementationException($this->uri);
-			default: throw new ProtocolException($this->uri);
+			case 501: throw new ImplementationException($this->uri);
+			case 400: throw new ProtocolException($this->uri);
 			}
 		}
 
