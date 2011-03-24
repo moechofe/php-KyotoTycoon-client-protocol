@@ -97,7 +97,7 @@ namespace KyotoTycoon
 		private $api = null;
 
 		// Indicate if OutOfBoundsException should be throw instead of returning null.
-		private $outofbound = true;
+		private $outofbound = false;
 
 		// Indicate if RuntimeException should be throw instead of returning false.
 		private $runtime = true;
@@ -560,7 +560,7 @@ namespace KyotoTycoon
 		{
 			assert('is_string($offset)');
 			try { return is_string($this->api->get($offset)); }
-			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return false; }
+			catch( \OutOfBoundsException $e ) { return false; }
 			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
 		}
 
