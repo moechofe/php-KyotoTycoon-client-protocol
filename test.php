@@ -11,7 +11,7 @@ define('server_uri','http://martibox:1978');
 
 skip_ok();
 
-test(/*
+test(
 	// {{{ Test simple operations
 
 	'Test simple operations: get,set,clear,replace,add,append,remove', function()
@@ -76,30 +76,25 @@ test(/*
 
 	'Test match_prefix and match_regex', function()
 	{
-		plan(16);
+		plan(17);
 		$kt = new KyotoTycoon\API(server_uri);
 		ok( $kt->clear );
-		var_dump(__LINE__);
 		ok( $kt->set('a.b.c','ananas,banana,citrus') );
 		ok( $kt->set('a.c.b','ananas,citrus,banana') );
 		ok( $kt->set('b.c.a','banana,citrus,ananas') );
 		ok( $kt->set('b.a.c','banana,ananas,citrus') );
-		var_dump(__LINE__);
 		isanarray( $r=$kt->match_prefix('a.') );
 		has( $r, 2 );
-		var_dump(__LINE__);
 		ok( false!==array_search('a.b.c', $r) );
 		ok( false!==array_search('a.c.b', $r) );
 		isanarray( $r=$kt->match_prefix('b.') );
-		var_dump(__LINE__);
+		has( $r, 2 );
+		ok( false!==array_search('b.a.c', $r) );
+		ok( false!==array_search('b.c.a', $r) );
+		isanarray( $r=$kt->match_regex('\w\.c\.\w') );
 		has( $r, 2 );
 		ok( false!==array_search('a.c.b', $r) );
 		ok( false!==array_search('b.c.a', $r) );
-		var_dump(__LINE__);
-		isanarray( $r=$kt->match_regex('\w\.c\.\w') );
-		has( $r, 1 );
-		var_dump(__LINE__);
-		ok( false!==array_search('a.c.b', $r) );
 	},
 
 	// }}}
@@ -168,7 +163,7 @@ test(/*
 
 	'Test fluent and quick interface', function()
 	{
-		plan(45);
+		plan(47);
 		$kt = kt(server_uri);
 		isnull( $kt->clear->c );
 		ok( $kt->a('ananas') );
@@ -199,7 +194,9 @@ test(/*
 		is( $kt->inc('i',2), 3 );
 		is( $kt->inc('f',0.1), 0.1 );
 		is( $kt->inc('f',0.2), 0.3 );
-		is( $kt->set('a','akira')->cat('a',' kurozawa')->get('a'), 'akira kurozawa' );
+		ok( $kt->set('a','akira') );
+		ok( $kt->cat('a',' kurozawa') );
+		is( $kt->get('a'), 'akira kurozawa' );
 		notok( $kt->add('a','alien') );
 		ok( $kt->rep('a','alien') );
 		ok( $kt->del('a') );
@@ -216,7 +213,7 @@ test(/*
 
 	// }}}
 	// {{{ Test ArrayAccess
-*/
+
 	'Test ArrayAccess', function()
 	{
 		plan(6);

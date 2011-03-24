@@ -1,22 +1,26 @@
 A PHP5.3+ API for Kyoto Tycoon
 ==============================
 
-Experimental API to communicate with a [Kyoto Tycoon](http://fallabs.com/kyototycoon/) server.
+Experimental API and UI to communicate with a [Kyoto Tycoon](http://fallabs.com/kyototycoon/) server.
 Using RPC protocol for now, but I'm plan to implement Rest and binary protocol too.
 
 Short example using the UI:
 
 	<?php
 	// Start a server with the command line: ktserver
-	$kt->kt('http://localhost:1978');
+	require_once 'kyoto-tycoon.php';
+	// Get an UI object an clear the database
+	$kt = kt()->clear;
 	// Setting records
-	$kt->set('日本','東京')
-	   ->set('france','paris');
-	// Getting a record
-	$city = $kt->get('日本');
-	$city = $kt->france;
+	$kt['日本'] = '東京';
+	$kt->set('Coruscant','Coruscant');
+	$kt->France('Paris');
+	// Getting records
+	echo $kt['日本'],PHP_EOL;
+	echo $kt->get('Coruscant'),PHP_EOL;
+	echo $kt->France,PHP_EOL;
 	// Browsing records
-	foreach( $kt as $k => $v )
-	  echo "country:$k city:$v";
+	foreach( $kt->forward() as $k => $v )
+		echo "country:$k city:$v",PHP_EOL;
 
 Look at the _test.php_ script for more examples.

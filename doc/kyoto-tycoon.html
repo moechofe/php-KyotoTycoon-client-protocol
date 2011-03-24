@@ -12,16 +12,33 @@
 <body>
 	<div class="document">
 		<h2 class="title">PhpKyotoTycoon - API to communicate with a KT server</h2>
-		<h1><em>&laquo;&nbsp;Un outil pour les diriger tous&nbsp;&raquo;</em></h1>
+		<h1><em>&laquo;&nbsp;Provided for easy and powerful programming related to database and web.&nbsp;&raquo;</em></h1>
 		<img src="http://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Network-server.svg/120px-Network-server.svg.png" align="right" style="margin-left:1em" />
-		<p>This tool is used to manipulate the records of a <em>Koyto Tycoon</em> server. It require a PHP5.3 version or more.Here is a list of cons and pros:&nbsp;</p>
+		<p>This tool is used to manipulate the records of a <em>Kyoto Tycoon</em> server. It require a PHP5.3 version or more. Here is a list of cons and pros:&nbsp;</p>
 		<ul style="clear:left">
 			<li><strong>Two ways to work with</strong>: close to the protocol and easy to use from PHP.</li>
 			<li>Support <strong>iterator</strong> and <strong>array access</strong> to browse the records.</li>
 			<li><hr/></li>
+<<<<<<< HEAD
 			<li>No support for Rest and binary protocol yet.</li>
 			<li>Lot of commands's still not implemented.</li>
+=======
+			<li>No support for Rest and binary protocol now.</li>
+>>>>>>> 2fbdac0c05847d8944e2499bbb924c19b47d37dd
 		</ul>
+		<span id="quickstart" class="anchor"></span>
+		<h3>Quick start</h3>
+		<p>Copy the file <tt>kyoto-tycoon.php</tt> somewhere and include it in your application:&nbsp;</p>
+		<pre name="code" class="php:nocontrols">require_once 'kyoto-tycoon.php';</pre>
+		<p>Instanciate the class <tt>UI</tt> with the function <tt>kt()</tt>:&nbsp;</p>
+		<pre name="code" class="php:nocontrols">$kt = kt();</pre>
+		<p>Parameters list are discribed in the documentation of the <a href="#func_var">kt()</a> function.</p>
+		<span id="access" class="anchor"></span>
+		<h3>Accessing records</h3>
+		<p></p>
+		<pre name="code" class="php:nocontrols">$kt['France'] = 'Paris';</pre>
+
+
 <!--
 		Ce outil de requêtage pour <em>Oracle</em> permet envoyer des requêtes et de récupérer les résultats. Il se comporte comme une couche d'abstraction aux drivers <em>PHP</em>&nbsp;: <em>OCI8</em>, <em>SqlRelay</em> et <em>PDO_OCI</em>. Voici ses avantages&nbsp;:</p>
 		<ul style="clear:left">
@@ -162,6 +179,7 @@ while( $stm-&gt;fetch )
 			<dt>LOB</dt>
 			<dd>Développer un mecanisme interne pour gérer les <em>Large Object</em> de façon transparente à la manière de <em>SqlRelay</em>.</dd>
 		</dl>
+	-->
 		<script language="javascript" src="shCore.js"></script>
 		<script language="javascript" src="shBrushPhp.js"></script>
 		<script language="javascript">
@@ -175,7 +193,6 @@ while( $stm-&gt;fetch )
 			<li><a class="anchor" href="#row">Ligne par ligne</a></li>
 			<li><a class="anchor" href="#field">Colonne</a></li>
 		</ul>
-	-->
 	</div>
 </body>
 </html>

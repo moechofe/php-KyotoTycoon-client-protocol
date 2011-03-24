@@ -258,7 +258,7 @@ function notexcept( $callback, $exception, $msg = 'Shouldn\'t throw an exception
 }
 
 // }}}
-// {{{ isaboolean, isaboolean, isaninteger, isnotaninteger, isastring, isnotastring, isanobject, isnotanobject, isanarray, isnotanarray, isaresource, isnotaresource
+// {{{ isaboolean, isnotaboolean, isaninteger, isnotaninteger, isastring, isnotastring, isanobject, isnotanobject, isanarray, isnotanarray, isaresource, isnotaresource
 
 /**
  * Test if a value is a boolean or not
@@ -472,11 +472,9 @@ function compare( $test, $operator, $expected, $msg )
 		diag( sprintf('#  obtained: %s %s', str_repeat(' ',strlen($operator)), $test) );
 		diag( sprintf('#  expected: %s %s', $operator, $expected) );
 		if( extension_loaded('xdebug') )
-		{
-			list($call) = array_slice(xdebug_get_function_stack(),-2,1);
-			if( in_array($call['function'],array('ok','notok')) and ! empty($call['file']) and ! empty($call['line']) )
-				diag( sprintf('#  at line: %s of file: %s', $call['line'], $call['file']) );
-		}
+			foreach( array_reverse(xdebug_get_function_stack()) as $call )
+				if( ! empty($call['file']) and $call['file'] != __FILE__ and ! empty($call['function']) and in_array($call['function'],array('ok','notok','is','isnt','truly','trulynot','greater','notgreater','lesser','notleser','contain','notcontain','has','hasnt','isa','isnota','like','notlike','except','notexcept','isaboolean','isnotaboolean','isaninteger','isnotaninteger','isastring','isnotastring','isanobject','isnotanobject','isanarray','isnotanarray','isaresource','isnotaresource')) and ! empty($call['line']) )
+				{ diag( sprintf('#  at line: %s of file: %s', $call['line'], $call['file']) ); break; }
 	}
 	return $ok;
 }
