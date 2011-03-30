@@ -9,7 +9,7 @@ Short example using the UI:
 	<?php
 	// Start a server with the command line: ktserver
 	require_once 'kyoto-tycoon.php';
-	// Get an UI object an clear the database
+	// Get an UI object and clear the database
 	$kt = kt()->clear;
 	// Setting records
 	$kt['日本'] = '東京';
