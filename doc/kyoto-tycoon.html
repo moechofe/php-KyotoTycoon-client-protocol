@@ -43,6 +43,45 @@ var_dump( $kt-&gt;get('日本') );</pre></li>
 			<pre name="code" class="php:nocontrols">$kt-&gt;Japan('Tokyo');
 var_dump( $kt-&gt;Japan );</pre></li>
 		</ul>
+		<p>Read the documentation about the <a href="#UI">UI class</a> to learn all the available ways to access records.</p>
+		<span id="quickstart" class="anchor"></span>
+		<h3>Class <tt>UI</tt> documentation</h3>
+		<p>The <em>UI</em> class is used to provide <strong>quick, fluent and dirty access to the records</strong> using PHP5 features.</p>
+		<dl>
+			<dt><tt>__construct()</tt></dt>
+			<dd>Instantiate a <em>UI</em> object with a specific <em>DSN</em> consisting of a host, a port and a database name or index. <br/>Exemple: <tt>http://localhost:1978/myBase</tt></dd>
+			<dd class="api"><em>UI</em> <strong>$kt</strong> = new UI( [<em>string</em> <strong>$dsn</strong> = "http://localhost:1978"] )</dd>
+			<dd><strong>$dsn</strong>:&nbsp;The Data Source Name used to identify the server and database.</dd>
+			<dd><strong>$kt</strong>:&nbsp;The <em>UI</em> object, ready the access records.</dd>
+			<dt><tt>__clone()</tt></dt>
+			<dd>Used internaly to prepare a statement object for browsing keys or records.</dd>
+			<dt><tt>-&gt;__get()</tt></dt>
+			<dd>Fluent access to configuration, procedures or records.
+				<dl>
+				<dt><tt>-&gt;clear</tt></dt>
+				<dd>Clear all records from the database.</dd>
+				<dd class="api"><em>UI</em> <strong>$kt</strong> -&gt; clear</dd>
+				<dd><strong>$kt</strong>:&nbsp;The <em>UI</em> object, ready the access records.</dd>
+				<dt><tt>-&gt;outofbound_throw_exception</tt></dt>
+				<dd>Indicate to throw an exception if a logical inconsistency error appear.</dd>
+				<dd class="api"><em>UI</em> <strong>$kt</strong> -&gt; outofbound_throw_exception</dd>
+				<dd><strong>$kt</strong>:&nbsp;The <em>UI</em> object, ready the access records.</dd>
+				<dt><tt>-&gt;outofbound_return_null</tt></dt>
+				<dd>Indicate to return <tt>null</tt> if a logical inconsistency error appear.</dd>
+				<dd class="api"><em>UI</em> <strong>$kt</strong> -&gt; outofbound_return_null</dd>
+				<dd><strong>$kt</strong>:&nbsp;The <em>UI</em> object, ready the access records.</dd>
+				<dt><tt>-&gt;runtime_throw_exception</tt></dt>
+				<dd>Indicate to throw an exception if a fatal error of the server program or the environment error appear.</dd>
+				<dd class="api"><em>UI</em> <strong>$kt</strong> -&gt; runtime_throw_exception</dd>
+				<dd><strong>$kt</strong>:&nbsp;The <em>UI</em> object, ready the access records.</dd>
+				<dt><tt>-&gt;runtime_return_false</tt></dt>
+				<dd>Indicate to return <tt>null</tt> if a fatal error of the server program or the environment error appear.</dd>
+				<dd class="api"><em>UI</em> <strong>$kt</strong> -&gt; runtime_return_false</dd>
+				<dd><strong>$kt</strong>:&nbsp;The <em>UI</em> object, ready the access records.</dd>
+				</dl>
+
+		</dl>
+
 
 
 
