@@ -3,7 +3,7 @@
 		"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<meta http-equiv="content-type" content="text/html; charset=ISO-8859-15">
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<title>PhpKyotoTycoon - API to communicate with a KT server</title>
 	<link type="text/css" rel="stylesheet" href="SyntaxHighlighter.css"></link>
 	<link rel="stylesheet" type="text/css" href="style.css" media="all" />
@@ -19,12 +19,8 @@
 			<li><strong>Two ways to work with</strong>: close to the protocol and easy to use from PHP.</li>
 			<li>Support <strong>iterator</strong> and <strong>array access</strong> to browse the records.</li>
 			<li><hr/></li>
-<<<<<<< HEAD
 			<li>No support for Rest and binary protocol yet.</li>
 			<li>Lot of commands's still not implemented.</li>
-=======
-			<li>No support for Rest and binary protocol now.</li>
->>>>>>> 2fbdac0c05847d8944e2499bbb924c19b47d37dd
 		</ul>
 		<span id="quickstart" class="anchor"></span>
 		<h3>Quick start</h3>
@@ -35,8 +31,19 @@
 		<p>Parameters list are discribed in the documentation of the <a href="#func_var">kt()</a> function.</p>
 		<span id="access" class="anchor"></span>
 		<h3>Accessing records</h3>
-		<p></p>
-		<pre name="code" class="php:nocontrols">$kt['France'] = 'Paris';</pre>
+		<p>The UI object supports 3 ways to set and get records.</p>
+		<ul>
+			<li>Using the object like an Array:&nbsp;
+			<pre name="code" class="php:nocontrols">$kt['France'] = 'Paris';
+var_dump( $kt['France'] );</pre></li>
+			<li>Using the <tt>set()</tt> and <tt>get()</tt> methods:&nbsp;
+			<pre name="code" class="php:nocontrols">$kt-&gt;set('日本', '東京');
+var_dump( $kt-&gt;get('日本') );</pre></li>
+			<li>Using the magic methods:&nbsp;
+			<pre name="code" class="php:nocontrols">$kt-&gt;Japan('Tokyo');
+var_dump( $kt-&gt;Japan );</pre></li>
+		</ul>
+
 
 
 <!--
