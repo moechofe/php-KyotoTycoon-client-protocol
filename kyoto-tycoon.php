@@ -26,14 +26,49 @@ namespace
 	 * ----
 	 * Set and get value of the records:
 	 * ----
+	 * // Using ArrayAccess
 	 * $kt['japan'] = 'tokyo';
-	 * $kt['france'] = 'paris';
-	 * var_dump( $kt['japan'], $kt['france'] );
+	 * var_dump( $kt['japan']);
+	 * // Using method
+	 * $kt->set('france','paris');
+	 * var_dump( $kt->get('france') );
+	 * // Using magic method
+	 * $kt->coruscant('coruscant');
+	 * var_dump( $kt->coruscant );
 	 * ----
 	 * Set and get the expiration time of a record.
 	 * ----
 	 * $kt->set('a','ananas',2);
 	 * var_dump( $kt->gxt('a') );
+	 * ----
+	 * Browsing keys
+	 * ----
+	 * // Keys begins with a prefix
+	 * foreach( $kt->prefix('prefix_') as $key )
+	 *   var_dump( $key );
+	 * // Keys matchs a regular expression
+	 * foreach( $kt->match('.*_match_.*') as $key )
+	 *   var_dump( $key );
+	 * ----
+	 * Browsing records
+	 * // Keys begins with a prefix
+	 * foreach( $kt->begin('prefix_') as $key => $value )
+	 *   var_dump( $key, $value );
+	 * // Keys matchs a regular expression
+	 * foreach( $kt->regex('.*_match_.*') as $key => $value )
+	 *   var_dump( $key, $value );
+	 * // All records
+	 * foreach( $kt->forward() as $key => $value )
+	 *   var_dump( $key, $value );
+	 * // All records starting at a key
+	 * foreach( $kt->forward('first') as $key => $value )
+	 *   var_dump( $key, $value );
+	 * // All records in reverse order
+	 * foreach( $kt->backward() as $key => $value )
+	 *   var_dump( $key, $value );
+	 * // All records in reverse order starting at a key
+	 * foreach( $kt->backward('last') as $key => $value )
+	 *   var_dump( $key, $value );
 	 * ----
 	 */
 	function kt( $uri = 'http://localhost:1978' )
