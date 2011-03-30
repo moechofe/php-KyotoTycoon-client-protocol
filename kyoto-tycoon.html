@@ -5,9 +5,123 @@
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<title>PhpKyotoTycoon - API to communicate with a KT server</title>
-	<link type="text/css" rel="stylesheet" href="SyntaxHighlighter.css"></link>
-	<link rel="stylesheet" type="text/css" href="style.css" media="all" />
-	<link rel="stylesheet" type="text/css" href="print.css" media="print" />
+	<style type="text/css">
+.dp-highlighter{font-family:Consolas, "Courier New", Courier, mono, serif;font-size:12px;background-color:#E7E5DC;width:99%;overflow:auto;padding-top:1px;margin:18px 0!important}
+.dp-highlighter ol,.dp-highlighter ol li,.dp-highlighter ol li span{border:none;margin:0;padding:0}
+.dp-highlighter a,.dp-highlighter a:hover{background:none;border:none;margin:0;padding:0}
+.dp-highlighter .bar{padding-left:45px}
+.dp-highlighter.collapsed .bar,.dp-highlighter.nogutter .bar{padding-left:0}
+.dp-highlighter ol{list-style:decimal;background-color:#fff;color:#5C5C5C;margin:0 0 1px 45px !important;padding:0}
+.dp-highlighter.nogutter ol,.dp-highlighter.nogutter ol li{list-style:none!important;margin-left:0!important}
+.dp-highlighter ol li,.dp-highlighter .columns div{list-style:decimal-leading-zero;list-style-position:outside!important;border-left:3px solid #6CE26C;background-color:#F8F8F8;color:#5C5C5C;line-height:14px;margin:0!important;padding:0 3px 0 10px !important}
+.dp-highlighter.nogutter ol li,.dp-highlighter.nogutter .columns div{border:0}
+.dp-highlighter .columns{background-color:#F8F8F8;color:gray;overflow:hidden;width:100%}
+.dp-highlighter .columns div{padding-bottom:5px}
+.dp-highlighter ol li.alt{background-color:#FFF;color:inherit}
+.dp-highlighter ol li span{color:#000;background-color:inherit}
+.dp-highlighter.collapsed ol{margin:0}
+.dp-highlighter.collapsed ol li{display:none}
+.dp-highlighter.printing{border:none}
+.dp-highlighter.printing .tools{display:none!important}
+.dp-highlighter.printing li{display:list-item!important}
+.dp-highlighter .tools{font:9px Verdana, Geneva, Arial, Helvetica, sans-serif;color:silver;background-color:#f8f8f8;border-left:3px solid #6CE26C;padding:3px 8px 10px 10px}
+.dp-highlighter.nogutter .tools{border-left:0}
+.dp-highlighter.collapsed .tools{border-bottom:0}
+.dp-highlighter .tools a{font-size:9px;color:#a0a0a0;background-color:inherit;text-decoration:none;margin-right:10px}
+.dp-highlighter .tools a:hover{color:red;background-color:inherit;text-decoration:underline}
+.dp-about{background-color:#fff;color:#333;margin:0;padding:0}
+.dp-about table{width:100%;height:100%;font-size:11px;font-family:Tahoma, Verdana, Arial, sans-serif!important}
+.dp-about td{vertical-align:top;padding:10px}
+.dp-about .copy{border-bottom:1px solid #ACA899;height:95%}
+.dp-about .title{color:red;background-color:inherit;font-weight:700}
+.dp-about .para{margin:0 0 4px}
+.dp-about .footer{background-color:#ECEADB;color:#333;border-top:1px solid #fff;text-align:right}
+.dp-about .close{font-size:11px;font-family:Tahoma, Verdana, Arial, sans-serif!important;background-color:#ECEADB;color:#333;width:60px;height:22px}
+.dp-highlighter .comment,.dp-highlighter .comments{color:#008200;background-color:inherit}
+.dp-highlighter .string{color:blue;background-color:inherit}
+.dp-highlighter .keyword{color:#069;font-weight:700;background-color:inherit}
+.dp-highlighter .preprocessor{color:gray;background-color:inherit}
+	</style>
+	<style type="text/css" media="all">
+body{font:17px georgia, serif;border-top:solid 41px #333;margin:0}
+div.navigation{position:fixed;top:0;left:0;width:100%;background:#333}
+* html body,* html{height:100%;margin:0;padding:0}
+* html{overflow:visible}
+* html body{overflow:auto;border-top:none;padding-top:71px}
+* html div.navigation{position:absolute;top:0;left:0;width:100%;background:#333}
+a{font-weight:700;color:#369}
+a:visited{text-decoration:none}
+div.document{position:relative;margin:30px}
+ul.menu{list-style:none;overflow:hidden;margin:0;padding:0 0 0 30px}
+ul.menu li{float:left;font:15px/18px sans-serif;margin:14px 16px 0 0}
+ul.menu a{color:#fff;text-decoration:none;display:block;background:#666;font-weight:400;padding:5px 7px}
+ul.menu li.selected a{background:#FFF;color:#000}
+ul.menu a.anchor{border-left:solid 8px #FFF}
+ul.menu form label{float:left;color:#FFF;background:#444;padding:5px 0 5px 7px}
+ul.menu form input{border:none;font:15px sans-serif;background:#444;color:#FFF;padding:5px 7px 5px 0}
+ul.menu span{display:block;background:#FFF;color:#000;padding:5px 7px}
+ul.menu span.discret{background:inherit;color:#ccc}
+span.anchor{display:block;position:relative;top:-40px}
+h3{margin-top:40px;font:1.7em serif;margin-bottom:0}
+h2.title{background:#ddd;font:1.3em sans-serif;padding:3px 5px}
+span.important{background:#f70;color:#fff;padding:0 3px}
+h1{font:2.3em serif;border-bottom:1px solid #666}
+ul.main{font-size:1.1em;background:#def;margin-left:10%;margin-right:10%;padding:2px 8px 2px 24px}
+ul.main li{line-height:1.5em}
+p,li,dt,dd{font:1em sans-serif}
+.dp-highlighter li{font:13px/17px "lucida console", monospace!important}
+tt{background:#ded;padding:0 1px}
+small{font-size:.9em}
+big,dd big{border-left:solid 8px #c33;padding-left:8px;background:#fee;font-family:georgia, serif}
+big small{font-size:.6em;font-style:italic}
+dt{margin-top:20px;font-weight:700;clear:left}
+dt tt{font-weight:400}
+dt dd{margin-bottom:20px}
+dd.api{border:solid 1px #aaa;float:left;font-family:monospace;padding:2px 4px}
+dd{margin-top:4px;margin-bottom:4px;clear:left}
+strong.value{font-family:monospace}
+table{border:solid 2px #999;border-collapse:collapse}
+caption{font:11px/15px sans-serif}
+td,th{border:solid 1px #999;font:13px/17px "lucida console", monospace;padding:3px 5px}
+th{font-weight:700;background:#ddd}
+pre{margin-right:12px;border-top:solid 1px #e7e5dc;border-bottom:solid 1px #e7e5dc;font:13px/13px "lucida console", monospace;padding:3px 5px}
+small.caption{font:.8em sans-serif;background:#e7e5dc;padding:1px 3px}
+small.caption + div{margin-top:0!important}
+.dp-highlighter ol li{border-left-color:#666!important}
+ul.big{list-style:none;margin:0;padding:0}
+ul.big li{margin:30px 0;padding:0}
+li.player div.avatar{float:left}
+li.player div.info{float:left;margin:10px 0 10px 10px}
+li.player div.info p{font:.7em sans-serif;margin:0}
+li.player div.info span.pseudo{font-weight:700}
+li.player div.play{clear:left;border-left:solid 8px #ddd}
+li.player div.play p{font:1.2em sans-serif;margin:0;padding:6px 8px}
+li.player div.admin{border-left:solid 8px #ddd}
+* html li.player div.admin{border-left:solid 1px #ddd}
+li.player div.admin fieldset{background:#ddd;border:none;position:relative;margin:0;padding:6px 11px 13px 6px}
+li.player div.admin legend{background:#FFF;font:.6em sans-serif;position:relative;top:-6px;left:-6px;padding:0 2px}
+li.player div.admin label{font:.8em sans-serif;margin-right:10px}
+li.player div.admin input{font:.8em sans-serif}
+ul.page{list-style:none;background:#333;height:35px;margin:0;padding:0}
+ul.page li{float:left;margin:0 20px 0 0}
+ul.page li a{display:block;background:#ddd;color:#000;font:bold 17px/25px sans-serif;text-decoration:none;padding:5px 8px}
+ul.page li a:hover{background:#666;color:#FFF}
+span.founded{background:#FF0}
+dl.chart{margin:0;padding:0}
+dl.chart dd{background:#6b2;height:16px;margin:0;padding:0}
+dir{list-style:none;margin-top:0;margin-bottom:0}
+dir li strong{font-family:"lucida console", monospace}
+input,textarea,button{font:17px georgia, serif}
+dd p{margin-top:0}
+p.evident{margin:2em}
+p.evident a.button{font-weight:400;display:table-cell;background-color:#90EE90;background-repeat:no-repeat;background-position:.2em center;border:solid 4px #228B22;border-radius:20px;-moz-border-radius:20px;-webkit-border-radius:20px;color:#006400;vertical-align:middle;margin:0 auto;padding:.2em .4em}
+blockquote{position:relative;top:-14px;font-size:.8em;margin:0 10px -8px 0}
+ul.menu a:hover,ul.menu li.selected label,ul.menu form:hover label,ul.menu li.selected input,ul.menu form:hover input{background:#eee;color:#000}
+	</style>
+	<style type="text/css" media="print">
+div.navigation,* html div.navigation,ul.menu{display:none;}
+body{border:none;}
+	</style>
 </head>
 <body>
 	<div class="document">
@@ -86,153 +200,167 @@ var_dump( $kt-&gt;Japan );</pre></li>
 				</dl>
 
 		</dl>
-
-
-
-
-<!--
-		Ce outil de requêtage pour <em>Oracle</em> permet envoyer des requêtes et de récupérer les résultats. Il se comporte comme une couche d'abstraction aux drivers <em>PHP</em>&nbsp;: <em>OCI8</em>, <em>SqlRelay</em> et <em>PDO_OCI</em>. Voici ses avantages&nbsp;:</p>
-		<ul style="clear:left">
-			<li><strong>Syntaxe unique</strong> quelque soit le drivers utilisé.</li>
-			<li>Syntaxe ultra <strong>courte et fluide</strong>.</li>
-			<li><strong>Gestion d'erreur</strong> par exceptions.</li>
-		</ul>
-		<span id="demarrage" class="anchor"></span>
-		<h3>Démarrage</h3>
-		<p>Ajouter dans votre fichier de configuration la ligne suivante&nbsp;:</p>
-		<pre name="code" class="php:nocontrols">require_once 'oracle-driver.php';</pre>
-		<p>Puis, récupérer une instance utilisable pour les requêtes&nbsp;:</p>
-		<pre name="code" class="php:nocontrols">$db = Oracle('oci://USER:PASS@HOST:PORT/NAME'); // pour utiliser l'extension OCI8
-$db = Oracle('relay://USER:PASS@HOST:PORT'); // pour utiliser l'extension SqlRelay</pre>
-		<p>A ce state la connexion n'est pas encore ouverte mais l'objet contient et conserve les paramètres de connexion.</p>
-		<dl>
-			<dt><tt>Oracle()</tt></dt>
-			<dd>La fonction <tt>Oracle()</tt> instancie et retourne un objet de la classe <tt>OracleDriver</tt>.</dd>
-			<dd class="api"><em>OracleDriver</em> = Oracle( <em>string</em> <strong>$uri</strong> )</dd>
-			<dd><strong class="value">$uri</strong>&nbsp;: une chaîne de caractère utilisée pous spécifier les paramètres de connexion. Le schema (<tt>oci://</tt>, <tt>relay://</tt> ou <tt>pdo://</tt>) en début de chaîne detérmine le driver utilisé (<em>OCI8</em>, <em>SqlRelay</em> ou <em>PDO_OCI</em>).</dd>
-		</dl>
-		<span id="prepare" class="anchor"></span>
-		<h3>Préparation de la requête</h3>
-		<p>La méthode <tt>query()</tt> ouvre réellement la connexion et prépare la requête. Ensuite, afin d'executer la requête et de récupérer les résultats, des méthodes et des membres sont utilisé de manières fluide pour couvrir les cas suivants&nbsp;:</p>
-		<ul>
-			<li>Récupération de <a href="#all">toutes les lignes d'un coup</a>.</li>
-			<li>Récupération <a href="#row">des lignes une par une</a>.</li>
-		</ul>
-		<dl>
-			<dt><tt>-&gt;query()</tt></dt>
-			<dd>
-				Retourne un clone de l'objet <em>OracleDriver</em> avec une requête préparer, prêt à recevoir des liasons et à etre exécuter.
-			</dd>
-			<dd class="api"><em>OracleDriver</em> <strong>$stm</strong> = Oracle-&gt;query( <em>string</em> <strong>$query</strong> [, <em>array</em> <strong>$markers</strong> = array] )</dd>
-			<dd><strong>$query</strong>&nbsp;: la requête <em>SQL</em>.</dd>
-			<dd><strong>$markers</strong>&nbsp;: un <strong>tableau associatif</strong> dont les cléfs sont les marqueurs <em>Oracle</em> et les valeures sont un des types suivants&nbsp;: <em>string</em>, <em>integer</em>, <em>float</em> ou <em>null</em>.<br/>Ce tableau permet de liéer des variables directe à la requête <em>SQL</em>. Pour plus d'information consulter la commande <a href="#in">in</a>.</dd>
-			<dd><strong>$stm</strong>&nbsp;: l'objet de la requête préparé et connecté au serveur <em>Oracle</em>.</dd>
-		</dl>
-		<p>L'objet <em>OracleDriver</em> ainsi cloné permet de ne pas interférer avec les autres requêtes et offre la possiblité d'être exécuter plusieurs fois grâce à la commande <a href="#exe">exe</a>.</p>
-		</dl>
-		<span id="all" class="anchor"></span>
-		<h3>Récupération de toutes les lignes</h3>
-		<dl>
-			<dt><tt>-&gt;all</tt><br /><tt>-&gt;all()</tt></dt>
-			<dd>
-				<p>Pour récupérer toutes les lignes du résultat&nbsp;:</p>
-				<pre name="code" class="php:nocontrols">$result = $db-&gt;query('select * from TABLE')-&gt;all;</pre>
-				<p>Pour parcourir toutes les lignes du résultat&nbsp;:</p>
-				<pre name="code" class="php:nocontrols">foreach( $db-&gt;query('select * from TABLE')-&gt;all as $row ); // &hellip;</pre>
-				<p>Pour sauter les 5 première lignes et retourner les 10 lignes du suivante&nbsp;:</blockquote>
-				<pre name="code" class="php:nocontrols">$result = $db-&gt;query('select * from TABLE')-&gt;all(5,10);</pre>
-			</dd>
-			<dd class="api"><em>array</em> <strong>$result</strong> = OracleDriver-&gt;all</dd>
-			<dd class="api"><em>array</em> <strong>$result</strong> = OracleDriver-&gt;all( [<em>integer</em> <strong>$skip</strong> = 0 [, <em>integer</em> <strong>$max</strong> = -1 ]]</dd>
-			<dd><strong>$skip</strong>&nbsp;: Un entier possitif indiquant le nombre des lignes à sauter dans le jeu du résultat.</dd>
-			<dd><strong>$max</strong>&nbsp;: Un entier possitif indiquant le nombre de lignes maximums à récupérer.<br/>Si cette valeur vaut <tt>-1</tt>, alors toutes les lignes seront retournées.</dd>
-			<dd><strong>$result</strong>&nbsp;: Un tableau contenant toutes les lignes du résultat sous forme de tableau associatif.<br/><u>Note</u>&nbsp;: si le résultat ne contient aucune ligne, <strong>$result</strong> sera un tableau vide qu'il est possible de tester&nbsp;:
-				<pre name="code" class="php:nocontrols">if( $db-&gt;query('select * from table')-&gt;all ) // &hellip;</pre>
-			</dd>
-			<dd>
-				<big>N'oubliez pas que cette façon de faire récupère toutes les lignes.</big><p>Et les stockes dans la mémoire du serveur qui exécute le script. D'un autre côté, cela permet de <strong>libérer la connexion rapidement</strong> si besoin avec le commande <a href="#close">close</a>.</p>
-			</dd>
-			<dd>
-			</dd>
-		</dl>
-		<span id="row" class="anchor"></span>
-		<h3>Récupération des lignes une par une</h3>
-		<dl>
-			<dt><tt>-&gt;row</tt></dt>
-			<dd>
-				<p>Pour récupérer un tableau associatif contenant la première lignes du résultat&nbsp;:</p>
-				<pre name="code" class="php:nocontrols">$row = $db-&gt;query('select * from TABLE where FIELD=1')-&gt;row;</pre>
-				<p>Pour récupérer un tableau associatif contenant la prochaine lignes du résultat, jusqu'a ce qu'il n'y en ais plus&nbsp;:</p>
-				<pre name="code" class="php:nocontrols">$stm = $db-&gt;query('select * from TABLE');
-while( $row = $stm-&gt;row ); // &hellip;</pre>
-			</dd>
-			<dd class="api"><em>array</em> <strong>$result</strong> = OracleDriver-&gt;row</dd>
-			<dd><strong>$result</strong>&nbsp;: Un tableau associatif contenant la prochaine ligne du résultat.</dd>
-		</dl>
-		<span id="field" class="anchor"></span>
-		<h3>Récupération des colonnes</h3>
-		<dl>
-			<dt><tt>-&gt;field</tt><br /><tt>-&gt;field()</tt></dt>
-			<dd>
-				<p>Pour récupérer la valeur d'une colonne de la première lignes du résultat&nbsp;:</p>
-				<pre name="code" class="php:nocontrols">$value = $db-&gt;query('select VALUE from TABLE where FIELD=1')-&gt;field;</pre>
-				<p>Pour récupérer la valeur d'une colonne de la prochaine lignes du résultat, jusqu'a ce qu'il n'y en ais plus&nbsp;:</p>
-				<pre name="code" class="php:nocontrols">$stm = $db-&gt;query('select VALUE from table');
-while( $value = $stm-&gt;field ); // &hellip;</pre>
-				<p>Pour récupérer la valeur d'une colonne à partir de son index&nbsp;:</p>
-				<pre name="code" class="php:nocontrols">$value = $db-&gt;query('select VALUE from TABLE where FIELD=1')-&gt;field(1);</pre>
-				<p>Pour récupérer la valeur d'une colonne à partir du nom de la colonne&nbsp;:</p>
-				<pre name="code" class="php:nocontrols">$value = $db-&gt;query('select VALUE from TABLE where FIELD=1')-&gt;field('VALUE');</pre>
-			</dd>
-			<dd class="api"><em>string|null|false</em> <strong>$result</strong> = OracleDriver-&gt;field</dd>
-			<dd class="api"><em>string|null|false</em> <strong>$result</strong> = OracleDriver-&gt;field( [<em>integer</em> <strong>$index</strong> = 1] )</dd>
-			<dd class="api"><em>string|null</em> <em>false</em> <strong>$result</strong> = OracleDriver-&gt;field( <em>string</em> <strong>$field</strong> )</dd>
-			<dd><strong>$result</strong>&nbsp;: Une chaîne de caractère ou la valeur <em>null</em>. Si il n'y as plus de ligne&nbsp;: <em>false</em> sera retourné.</dd>
-			<dd><strong>$index</strong>&nbsp;: L'index de la colonne à partir de <tt>1</tt>.</dd>
-			<dd><strong>$field</strong>&nbsp;: Le nom de la colonne.</dd>
-		</dl>
-		<span id="in" class="anchor"></span>
-		<h3>Liaison des valeurs en entrée pour la récupération</h3>
-		<dl>
-			<dt><tt>-&gt;in()</tt><br/><tt>-&gt;query()</tt><br/><tt>-&gt;<u>XXX</u>()</tt></dt>
-			<dd>
-				<p>Pour liéer des références à des marqueurs <em>Oracle</em>&nbsp;:</p>
-				<pre name="code" class="php:nocontrols">$f2 = 'foo'; $f3 = 'bar';
-$row = $db-&gt;query('SELECT F1 FROM T1 WHERE F2=:F2 AND F3=:F3')-&gt;in('F2',$f2)-&gt;in('F3',$f3)-&gt;row;</pre>
-				<p>Pour liées les marqueurs avec un <strong>tableau associatif</strong>&nbsp;:<br/>
-				<u>Attention</u>&nbsp;: Pas de valeur passées par références avec cette méthode. Voir la documentation de la méthode <a href="#prepare">query</a>.</p>
-				<pre name="code" class="php:nocontrols">$row = $db-&gt;query('SELECT F1 FROM T1 WHERE F2=:F2 AND F3=:F3', array('F2'=&gt;'foo','F3'=&gt;'bar'))-&gt;row;</pre>
-				<p><u>Meilleur technique</u>. Pour liée des valeurs directe à des marqueurs en utilisant les <strong>méthodes magiques</strong>&nbsp;:<br/>
-				<u>Attention</u>&nbsp;: Pas de références non plus avec cette méthode.</p>
-				<pre name="code" class="php:nocontrols">$row = $db-&gt;query('SELECT F1 FROM T1 WHERE F2=:F2 AND F3=:F3')-&gt;F2('foo')-&gt;F3('bar')-&gt;row;</pre>
-			</dd>
-			<dd class="api"><em>OracleDriver</em> <strong>$stm</strong> = OracleDriver-&gt;in( <em>string</em> <strong>$marker</strong>, <em>string|numeric|null</em> <strong>$value</strong> )</dd>
-			<dd class="api"><em>OracleDriver</em> <strong>$stm</strong> = OracleDriver-&gt;<strong>$marker</strong>( <em>string|numeric|null</em> <strong>$value</strong> )</dd>
-			<dd><strong>$marker</strong>&nbsp;: un chaîne de caractère correspondant au marqueur <em>Oracle</em> utiliser dans la requête.</dd>
-			<dd><strong>$value</strong>&nbsp;: une variable passé par référence dont la valeurs doit être de type&nbsp;: <em>string</em>, <em>integer</em>, <em>float</em> ou <em>null</em>.</dd>
-			<dd><strong>$stm</strong>&nbsp;: l'objet de la requête préparé et connecté au serveur <em>Oracle</em>.</dd>
-		</dl>
-		<h3>Liaison des colonnes en sortie pour la récupération</h3>
-		<dl>
-			<dt><tt>-&gt;define()</tt></dt>
-			<dd>
-				<p>Pour liéer des références à des colonnes <em>Oracle</em>&nbsp;:</p>
-				<pre name="code" class="php:nocontrols">$f1 = $f2 = null;
-$stm = $db-&gt;query('SELECT F1,F2 FROM T1')-&gt;define('F1',$f1)-&gt;define('F2',$f2);
-while( $stm-&gt;fetch )
-	var_dump( $f1, $f2 );</pre>
-			</dd>
-		</dl>
-
-		<span id="todos" class="anchor"></span>
-		<h3>Liste des choses à faire</h3>
-		<dl>
-			<dt>LOB</dt>
-			<dd>Développer un mecanisme interne pour gérer les <em>Large Object</em> de façon transparente à la manière de <em>SqlRelay</em>.</dd>
-		</dl>
-	-->
-		<script language="javascript" src="shCore.js"></script>
-		<script language="javascript" src="shBrushPhp.js"></script>
+		<script language="javascript">
+var dp={sh:{Toolbar:{},Utils:{},RegexLib:{},Brushes:{},Strings:{AboutDialog:'<html><head><title>About...</title></head><body class="dp-about"><table cellspacing="0"><tr><td class="copy"><p class="title">dp.SyntaxHighlighter</div><div class="para">Version: {V}</p><p><a href="http://www.dreamprojections.com/syntaxhighlighter/?ref=about" target="_blank">http://www.dreamprojections.com/syntaxhighlighter</a></p>&copy;2004-2007 Alex Gorbatchev.</td></tr><tr><td class="footer"><input type="button" class="close" value="OK" onClick="window.close()"/></td></tr></table></body></html>'},ClipboardSwf:null,Version:'1.5.1'}};dp.SyntaxHighlighter=dp.sh;dp.sh.Toolbar.Commands={ExpandSource:{label:'+ expand source',check:function(highlighter){return highlighter.collapse;},func:function(sender,highlighter)
+{sender.parentNode.removeChild(sender);highlighter.div.className=highlighter.div.className.replace('collapsed','');}},ViewSource:{label:'view plain',func:function(sender,highlighter)
+{var code=dp.sh.Utils.FixForBlogger(highlighter.originalCode).replace(/</g,'&lt;');var wnd=window.open('','_blank','width=750, height=400, location=0, resizable=1, menubar=0, scrollbars=0');wnd.document.write('<textarea style="width:99%;height:99%">'+code+'</textarea>');wnd.document.close();}},CopyToClipboard:{label:'copy to clipboard',check:function(){return window.clipboardData!=null||dp.sh.ClipboardSwf!=null;},func:function(sender,highlighter)
+{var code=dp.sh.Utils.FixForBlogger(highlighter.originalCode).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');if(window.clipboardData)
+{window.clipboardData.setData('text',code);}
+else if(dp.sh.ClipboardSwf!=null)
+{var flashcopier=highlighter.flashCopier;if(flashcopier==null)
+{flashcopier=document.createElement('div');highlighter.flashCopier=flashcopier;highlighter.div.appendChild(flashcopier);}
+flashcopier.innerHTML='<embed src="'+dp.sh.ClipboardSwf+'" FlashVars="clipboard='+encodeURIComponent(code)+'" width="0" height="0" type="application/x-shockwave-flash"></embed>';}
+alert('The code is in your clipboard now');}},PrintSource:{label:'print',func:function(sender,highlighter)
+{var iframe=document.createElement('IFRAME');var doc=null;iframe.style.cssText='position:absolute;width:0px;height:0px;left:-500px;top:-500px;';document.body.appendChild(iframe);doc=iframe.contentWindow.document;dp.sh.Utils.CopyStyles(doc,window.document);doc.write('<div class="'+highlighter.div.className.replace('collapsed','')+' printing">'+highlighter.div.innerHTML+'</div>');doc.close();iframe.contentWindow.focus();iframe.contentWindow.print();alert('Printing...');document.body.removeChild(iframe);}},About:{label:'?',func:function(highlighter)
+{var wnd=window.open('','_blank','dialog,width=300,height=150,scrollbars=0');var doc=wnd.document;dp.sh.Utils.CopyStyles(doc,window.document);doc.write(dp.sh.Strings.AboutDialog.replace('{V}',dp.sh.Version));doc.close();wnd.focus();}}};dp.sh.Toolbar.Create=function(highlighter)
+{var div=document.createElement('DIV');div.className='tools';for(var name in dp.sh.Toolbar.Commands)
+{var cmd=dp.sh.Toolbar.Commands[name];if(cmd.check!=null&&!cmd.check(highlighter))
+continue;div.innerHTML+='<a href="#" onclick="dp.sh.Toolbar.Command(\''+name+'\',this);return false;">'+cmd.label+'</a>';}
+return div;}
+dp.sh.Toolbar.Command=function(name,sender)
+{var n=sender;while(n!=null&&n.className.indexOf('dp-highlighter')==-1)
+n=n.parentNode;if(n!=null)
+dp.sh.Toolbar.Commands[name].func(sender,n.highlighter);}
+dp.sh.Utils.CopyStyles=function(destDoc,sourceDoc)
+{var links=sourceDoc.getElementsByTagName('link');for(var i=0;i<links.length;i++)
+if(links[i].rel.toLowerCase()=='stylesheet')
+destDoc.write('<link type="text/css" rel="stylesheet" href="'+links[i].href+'"></link>');}
+dp.sh.Utils.FixForBlogger=function(str)
+{return(dp.sh.isBloggerMode==true)?str.replace(/<br\s*\/?>|&lt;br\s*\/?&gt;/gi,'\n'):str;}
+dp.sh.RegexLib={MultiLineCComments:new RegExp('/\\*[\\s\\S]*?\\*/','gm'),SingleLineCComments:new RegExp('//.*$','gm'),SingleLinePerlComments:new RegExp('#.*$','gm'),DoubleQuotedString:new RegExp('"(?:\\.|(\\\\\\")|[^\\""\\n])*"','g'),SingleQuotedString:new RegExp("'(?:\\.|(\\\\\\')|[^\\''\\n])*'",'g')};dp.sh.Match=function(value,index,css)
+{this.value=value;this.index=index;this.length=value.length;this.css=css;}
+dp.sh.Highlighter=function()
+{this.noGutter=false;this.addControls=true;this.collapse=false;this.tabsToSpaces=true;this.wrapColumn=80;this.showColumns=true;}
+dp.sh.Highlighter.SortCallback=function(m1,m2)
+{if(m1.index<m2.index)
+return-1;else if(m1.index>m2.index)
+return 1;else
+{if(m1.length<m2.length)
+return-1;else if(m1.length>m2.length)
+return 1;}
+return 0;}
+dp.sh.Highlighter.prototype.CreateElement=function(name)
+{var result=document.createElement(name);result.highlighter=this;return result;}
+dp.sh.Highlighter.prototype.GetMatches=function(regex,css)
+{var index=0;var match=null;while((match=regex.exec(this.code))!=null)
+this.matches[this.matches.length]=new dp.sh.Match(match[0],match.index,css);}
+dp.sh.Highlighter.prototype.AddBit=function(str,css)
+{if(str==null||str.length==0)
+return;var span=this.CreateElement('SPAN');str=str.replace(/ /g,'&nbsp;');str=str.replace(/</g,'&lt;');str=str.replace(/\n/gm,'&nbsp;<br>');if(css!=null)
+{if((/br/gi).test(str))
+{var lines=str.split('&nbsp;<br>');for(var i=0;i<lines.length;i++)
+{span=this.CreateElement('SPAN');span.className=css;span.innerHTML=lines[i];this.div.appendChild(span);if(i+1<lines.length)
+this.div.appendChild(this.CreateElement('BR'));}}
+else
+{span.className=css;span.innerHTML=str;this.div.appendChild(span);}}
+else
+{span.innerHTML=str;this.div.appendChild(span);}}
+dp.sh.Highlighter.prototype.IsInside=function(match)
+{if(match==null||match.length==0)
+return false;for(var i=0;i<this.matches.length;i++)
+{var c=this.matches[i];if(c==null)
+continue;if((match.index>c.index)&&(match.index<c.index+c.length))
+return true;}
+return false;}
+dp.sh.Highlighter.prototype.ProcessRegexList=function()
+{for(var i=0;i<this.regexList.length;i++)
+this.GetMatches(this.regexList[i].regex,this.regexList[i].css);}
+dp.sh.Highlighter.prototype.ProcessSmartTabs=function(code)
+{var lines=code.split('\n');var result='';var tabSize=4;var tab='\t';function InsertSpaces(line,pos,count)
+{var left=line.substr(0,pos);var right=line.substr(pos+1,line.length);var spaces='';for(var i=0;i<count;i++)
+spaces+=' ';return left+spaces+right;}
+function ProcessLine(line,tabSize)
+{if(line.indexOf(tab)==-1)
+return line;var pos=0;while((pos=line.indexOf(tab))!=-1)
+{var spaces=tabSize-pos%tabSize;line=InsertSpaces(line,pos,spaces);}
+return line;}
+for(var i=0;i<lines.length;i++)
+result+=ProcessLine(lines[i],tabSize)+'\n';return result;}
+dp.sh.Highlighter.prototype.SwitchToList=function()
+{var html=this.div.innerHTML.replace(/<(br)\/?>/gi,'\n');var lines=html.split('\n');if(this.addControls==true)
+this.bar.appendChild(dp.sh.Toolbar.Create(this));if(this.showColumns)
+{var div=this.CreateElement('div');var columns=this.CreateElement('div');var showEvery=10;var i=1;while(i<=150)
+{if(i%showEvery==0)
+{div.innerHTML+=i;i+=(i+'').length;}
+else
+{div.innerHTML+='&middot;';i++;}}
+columns.className='columns';columns.appendChild(div);this.bar.appendChild(columns);}
+for(var i=0,lineIndex=this.firstLine;i<lines.length-1;i++,lineIndex++)
+{var li=this.CreateElement('LI');var span=this.CreateElement('SPAN');li.className=(i%2==0)?'alt':'';span.innerHTML=lines[i]+'&nbsp;';li.appendChild(span);this.ol.appendChild(li);}
+this.div.innerHTML='';}
+dp.sh.Highlighter.prototype.Highlight=function(code)
+{function Trim(str)
+{return str.replace(/^\s*(.*?)[\s\n]*$/g,'$1');}
+function Chop(str)
+{return str.replace(/\n*$/,'').replace(/^\n*/,'');}
+function Unindent(str)
+{var lines=dp.sh.Utils.FixForBlogger(str).split('\n');var indents=new Array();var regex=new RegExp('^\\s*','g');var min=1000;for(var i=0;i<lines.length&&min>0;i++)
+{if(Trim(lines[i]).length==0)
+continue;var matches=regex.exec(lines[i]);if(matches!=null&&matches.length>0)
+min=Math.min(matches[0].length,min);}
+if(min>0)
+for(var i=0;i<lines.length;i++)
+lines[i]=lines[i].substr(min);return lines.join('\n');}
+function Copy(string,pos1,pos2)
+{return string.substr(pos1,pos2-pos1);}
+var pos=0;if(code==null)
+code='';this.originalCode=code;this.code=Chop(Unindent(code));this.div=this.CreateElement('DIV');this.bar=this.CreateElement('DIV');this.ol=this.CreateElement('OL');this.matches=new Array();this.div.className='dp-highlighter';this.div.highlighter=this;this.bar.className='bar';this.ol.start=this.firstLine;if(this.CssClass!=null)
+this.ol.className=this.CssClass;if(this.collapse)
+this.div.className+=' collapsed';if(this.noGutter)
+this.div.className+=' nogutter';if(this.tabsToSpaces==true)
+this.code=this.ProcessSmartTabs(this.code);this.ProcessRegexList();if(this.matches.length==0)
+{this.AddBit(this.code,null);this.SwitchToList();this.div.appendChild(this.bar);this.div.appendChild(this.ol);return;}
+this.matches=this.matches.sort(dp.sh.Highlighter.SortCallback);for(var i=0;i<this.matches.length;i++)
+if(this.IsInside(this.matches[i]))
+this.matches[i]=null;for(var i=0;i<this.matches.length;i++)
+{var match=this.matches[i];if(match==null||match.length==0)
+continue;this.AddBit(Copy(this.code,pos,match.index),null);this.AddBit(match.value,match.css);pos=match.index+match.length;}
+this.AddBit(this.code.substr(pos),null);this.SwitchToList();this.div.appendChild(this.bar);this.div.appendChild(this.ol);}
+dp.sh.Highlighter.prototype.GetKeywords=function(str)
+{return'\\b'+str.replace(/ /g,'\\b|\\b')+'\\b';}
+dp.sh.BloggerMode=function()
+{dp.sh.isBloggerMode=true;}
+dp.sh.HighlightAll=function(name,showGutter,showControls,collapseAll,firstLine,showColumns)
+{function FindValue()
+{var a=arguments;for(var i=0;i<a.length;i++)
+{if(a[i]==null)
+continue;if(typeof(a[i])=='string'&&a[i]!='')
+return a[i]+'';if(typeof(a[i])=='object'&&a[i].value!='')
+return a[i].value+'';}
+return null;}
+function IsOptionSet(value,list)
+{for(var i=0;i<list.length;i++)
+if(list[i]==value)
+return true;return false;}
+function GetOptionValue(name,list,defaultValue)
+{var regex=new RegExp('^'+name+'\\[(\\w+)\\]$','gi');var matches=null;for(var i=0;i<list.length;i++)
+if((matches=regex.exec(list[i]))!=null)
+return matches[1];return defaultValue;}
+function FindTagsByName(list,name,tagName)
+{var tags=document.getElementsByTagName(tagName);for(var i=0;i<tags.length;i++)
+if(tags[i].getAttribute('name')==name)
+list.push(tags[i]);}
+var elements=[];var highlighter=null;var registered={};var propertyName='innerHTML';FindTagsByName(elements,name,'pre');FindTagsByName(elements,name,'textarea');if(elements.length==0)
+return;for(var brush in dp.sh.Brushes)
+{var aliases=dp.sh.Brushes[brush].Aliases;if(aliases==null)
+continue;for(var i=0;i<aliases.length;i++)
+registered[aliases[i]]=brush;}
+for(var i=0;i<elements.length;i++)
+{var element=elements[i];var options=FindValue(element.attributes['class'],element.className,element.attributes['language'],element.language);var language='';if(options==null)
+continue;options=options.split(':');language=options[0].toLowerCase();if(registered[language]==null)
+continue;highlighter=new dp.sh.Brushes[registered[language]]();element.style.display='none';highlighter.noGutter=(showGutter==null)?IsOptionSet('nogutter',options):!showGutter;highlighter.addControls=(showControls==null)?!IsOptionSet('nocontrols',options):showControls;highlighter.collapse=(collapseAll==null)?IsOptionSet('collapse',options):collapseAll;highlighter.showColumns=(showColumns==null)?IsOptionSet('showcolumns',options):showColumns;var headNode=document.getElementsByTagName('head')[0];if(highlighter.Style&&headNode)
+{var styleNode=document.createElement('style');styleNode.setAttribute('type','text/css');if(styleNode.styleSheet)
+{styleNode.styleSheet.cssText=highlighter.Style;}
+else
+{var textNode=document.createTextNode(highlighter.Style);styleNode.appendChild(textNode);}
+headNode.appendChild(styleNode);}
+highlighter.firstLine=(firstLine==null)?parseInt(GetOptionValue('firstline',options,1)):firstLine;highlighter.Highlight(element[propertyName]);highlighter.source=element;element.parentNode.insertBefore(highlighter.div,element);}}
+		</script>
+		<script language="javascript">
+dp.sh.Brushes.Php=function()
+{var funcs='abs acos acosh addcslashes addslashes '+'array_change_key_case array_chunk array_combine array_count_values array_diff '+'array_diff_assoc array_diff_key array_diff_uassoc array_diff_ukey array_fill '+'array_filter array_flip array_intersect array_intersect_assoc array_intersect_key '+'array_intersect_uassoc array_intersect_ukey array_key_exists array_keys array_map '+'array_merge array_merge_recursive array_multisort array_pad array_pop array_product '+'array_push array_rand array_reduce array_reverse array_search array_shift '+'array_slice array_splice array_sum array_udiff array_udiff_assoc '+'array_udiff_uassoc array_uintersect array_uintersect_assoc '+'array_uintersect_uassoc array_unique array_unshift array_values array_walk '+'array_walk_recursive atan atan2 atanh base64_decode base64_encode base_convert '+'basename bcadd bccomp bcdiv bcmod bcmul bindec bindtextdomain bzclose bzcompress '+'bzdecompress bzerrno bzerror bzerrstr bzflush bzopen bzread bzwrite ceil chdir '+'checkdate checkdnsrr chgrp chmod chop chown chr chroot chunk_split class_exists '+'closedir closelog copy cos cosh count count_chars date decbin dechex decoct '+'deg2rad delete ebcdic2ascii echo empty end ereg ereg_replace eregi eregi_replace error_log '+'error_reporting escapeshellarg escapeshellcmd eval exec exit exp explode extension_loaded '+'feof fflush fgetc fgetcsv fgets fgetss file_exists file_get_contents file_put_contents '+'fileatime filectime filegroup fileinode filemtime fileowner fileperms filesize filetype '+'floatval flock floor flush fmod fnmatch fopen fpassthru fprintf fputcsv fputs fread fscanf '+'fseek fsockopen fstat ftell ftok getallheaders getcwd getdate getenv gethostbyaddr gethostbyname '+'gethostbynamel getimagesize getlastmod getmxrr getmygid getmyinode getmypid getmyuid getopt '+'getprotobyname getprotobynumber getrandmax getrusage getservbyname getservbyport gettext '+'gettimeofday gettype glob gmdate gmmktime ini_alter ini_get ini_get_all ini_restore ini_set '+'interface_exists intval ip2long is_a is_array is_bool is_callable is_dir is_double '+'is_executable is_file is_finite is_float is_infinite is_int is_integer is_link is_long '+'is_nan is_null is_numeric is_object is_readable is_real is_resource is_scalar is_soap_fault '+'is_string is_subclass_of is_uploaded_file is_writable is_writeable mkdir mktime nl2br '+'parse_ini_file parse_str parse_url passthru pathinfo readlink realpath rewind rewinddir rmdir '+'round str_ireplace str_pad str_repeat str_replace str_rot13 str_shuffle str_split '+'str_word_count strcasecmp strchr strcmp strcoll strcspn strftime strip_tags stripcslashes '+'stripos stripslashes stristr strlen strnatcasecmp strnatcmp strncasecmp strncmp strpbrk '+'strpos strptime strrchr strrev strripos strrpos strspn strstr strtok strtolower strtotime '+'strtoupper strtr strval substr substr_compare';var keywords='and or xor __FILE__ __LINE__ array as break case '+'cfunction class const continue declare default die do else '+'elseif empty enddeclare endfor endforeach endif endswitch endwhile '+'extends for foreach function include include_once global if '+'new old_function return static switch use require require_once '+'var while __FUNCTION__ __CLASS__ '+'__METHOD__ abstract interface public implements extends private protected throw';this.regexList=[{regex:dp.sh.RegexLib.SingleLineCComments,css:'comment'},{regex:dp.sh.RegexLib.MultiLineCComments,css:'comment'},{regex:dp.sh.RegexLib.DoubleQuotedString,css:'string'},{regex:dp.sh.RegexLib.SingleQuotedString,css:'string'},{regex:new RegExp('\\$\\w+','g'),css:'vars'},{regex:new RegExp(this.GetKeywords(funcs),'gmi'),css:'func'},{regex:new RegExp(this.GetKeywords(keywords),'gm'),css:'keyword'}];this.CssClass='dp-c';}
+dp.sh.Brushes.Php.prototype=new dp.sh.Highlighter();dp.sh.Brushes.Php.Aliases=['php'];
+		</script>
 		<script language="javascript">
 			dp.SyntaxHighlighter.HighlightAll('code');
 		</script>
