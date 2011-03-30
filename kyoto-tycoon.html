@@ -198,6 +198,15 @@ var_dump( $kt-&gt;Japan );</pre></li>
 				<dd><strong><em>key</em></strong>:&nbsp;The <em>key</em> of the record.</dd>
 				<dd><strong>$value</strong>:&nbsp;The value of the record.</dd>
 				</dl>
+			<dt><tt>__isset()</tt></dt>
+			<dd>Used internaly to return if a record exists in the base using the <a href="http://php.net/arrayaccess">ArrayAccess</a> feature.</dd>
+			<dd class="api"><em>boolean</em> <strong>$exists</strong> = isset( <em>UI</em>[<em>string</em> <strong>$key</strong>] )</dd>
+			<dd><strong><em>key</em></strong>:&nbsp;The <em>key</em> of the record.</dd>
+			<dd><strong>$exists</strong>:&nbsp;<tt>true</tt> if the record exists.</dd>
+			<dt><tt>__unset()</tt></dt>
+			<dd>Used internaly to remove a record using the <a href="http://php.net/arrayaccess">ArrayAccess</a> feature.</dd>
+			<dd class="api">unset( <em>UI</em>[<em>string</em> <strong>$key</strong>] )</dd>
+			<dd><strong><em>key</em></strong>:&nbsp;The <em>key</em> of the record.</dd>
 
 		</dl>
 		<script language="javascript">
