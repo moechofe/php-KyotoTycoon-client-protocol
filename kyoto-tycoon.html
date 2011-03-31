@@ -215,10 +215,13 @@ var_dump( $kt-&gt;Japan );</pre></li>
 			<dd><strong>$kt</strong>:&nbsp;The <em>UI</em> object, ready the access records.</dd>
 			<dt><tt>-&gt;get()</tt></dt>
 			<dd>Return the value of a record and optionaly the expiration time.</dd>
-			<dd class="api"><em>string</em> <strong>$value</strong> = <em>UI</em>-&gt;get( <em>string</em> <strong>$key</strong>, [<em>string|null</em> <strong>&amp;$xt</strong> = null] )</dd>
+			<dd class="api"><em>string,null,false</em> <strong>$value</strong> = <em>UI</em>-&gt;get( <em>string</em> <strong>$key</strong>, [<em>string|null</em> <strong>&amp;$xt</strong> = null] )</dd>
 			<dd><strong>$key</strong>:&nbsp;The key of the record.</dd>
-			<dd>(out) <strong>&$xt</strong>:&nbsp;The expiration time.</dd>
-			<dd><strong>$value</strong>:&nbsp;The value of the record.</dd>
+			<dd><em>string</em> <strong>&$xt</strong>:&nbsp;The expiration time.</dd>
+			<dd><em>string</em> <strong>$value</strong>:&nbsp;The value of the record.</dd>
+			<dd>If the record not exists then return <tt>null</tt> or throw an OutOfBoundsException depending of the configuration.</dd>
+			<dd>If an error appear then return <tt>false</tt> or throw a RuntimeException depending of the configuration.</dd>
+
 
 
 		</dl>
