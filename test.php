@@ -11,7 +11,7 @@ define('server_uri','http://martibox:1978');
 
 skip_ok();
 
-test(
+test(/*
 	// {{{ Test simple operations
 
 	'Test simple operations: get,set,clear,replace,add,append,remove', function()
@@ -234,8 +234,16 @@ test(
 		ok( isset($kt['a']) );
 		unset($kt['a']);
 		notok( isset($kt['a']) );
-	}
+	},
 
 	// }}}
+*/
+	'Test REST procedures', function()
+	{
+		$kt = new KyotoTycoon\API(server_uri);
+		ok( $kt->set( 'japan', 'tokyo' ) );
+		is( $kt->getful('japan'), 'tokyo' );
+	}
+
 );
 

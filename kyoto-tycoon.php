@@ -847,7 +847,7 @@ namespace KyotoTycoon
 		}
 
 		// }}}
-		// {{{ get()
+		// {{{ get(), getful()
 
 		/**
 		 * Retrieve the value of a record.
@@ -874,6 +874,14 @@ namespace KyotoTycoon
 				else
 					throw ProtocolException( $this->url );
 			} );
+		}
+		function getful( $key, &$xt = null, &$time = null )
+		{
+			assert('is_string($key)');
+			return $this->rest( 'GET', $key, null, function($headers) use(&$xt,&$time) {
+				if( isset($headers['X-Kt-Xt']) ) $xt = $headers['X-Kt-Xt'];
+				if( isset($headers['Date']) ) $time = $headers['Date'];
+			}	);
 		}
 
 		// }}}
@@ -1234,7 +1242,7 @@ namespace KyotoTycoon
 		}
 
 		// }}}
-		// {{{ curl(), rpc()
+		// {{{ curl(), rpc(), rest()
 
 		/**
 		 * Return a curl resource identifier
@@ -1247,7 +1255,6 @@ namespace KyotoTycoon
 			{
 				$curl = curl_init();
 				curl_setopt_array($curl, array(
-					CURLOPT_POST => true,
 					CURLOPT_RETURNTRANSFER => true,
 					CURLOPT_CONNECTTIMEOUT => $this->timeout,
 					CURLOPT_TIMEOUT => $this->keepalive ));
@@ -1281,8 +1288,11 @@ namespace KyotoTycoon
 			unset($data);
 			assert('is_string($post)');
 
-			curl_setopt($this->curl(), CURLOPT_URL, "{$this->uri}/rpc/{$cmd}" );
-			curl_setopt($this->curl(), CURLOPT_POSTFIELDS, $post);
+			curl_setopt_array($this->curl(), array(
+				CURLOPT_URL => "{$this->uri}/rpc/{$cmd}",
+				CURLOPT_HEADER => false,
+				CURLOPT_POST => true,
+				CURLOPT_POSTFIELDS => $post ));
 			if( is_string($data = curl_exec($this->curl())) and $data and $data = explode("\n",substr($data,0,-1)) )
 				$data = array_combine(
 					array_map( function($k) { return substr($k,0,strpos($k,"\t")); }, $data ),
@@ -1310,6 +1320,45 @@ namespace KyotoTycoon
 		}
 
 		// }}}
-	}
 
+		public function rest( $cmd, $key, $prepare = null, $when_ok = null )
+		{
+			assert('in_array($cmd,array("GET","HEAD","PUT","DELETE"))');
+			assert('is_string($key)');
+			assert('is_null($prepare) or $prepare instanceof Closure');
+			assert('is_null($when_ok) or $when_ok instanceof Closure');
+
+			curl_setopt_array($this->curl(), array(
+				CURLOPT_VERBOSE => true,
+				CURLOPT_HEADER => true,
+				CURLOPT_URL => "{$this->uri}/".urlencode($key),
+				$cmd=='HEAD' ? CURLOPT_NOBODY : CURLOPT_POST => $cmd=='HEAD' ? true : false ));
+
+			if( $prepare ) $prepare($this->curl());
+
+			$headers = curl_exec($this->curl());
+			if( false !==($tmp = strpos($headers,"\r\n\r\n")) )
+			{
+				$data = substr($headers,$tmp+4);
+				$headers = substr($headers,0,$tmp);
+			}
+			else
+				$data = '';
+
+			switch( curl_getinfo($this->curl(),CURLINFO_HTTP_CODE) )
+			{
+			case 200:
+				if( $when_ok ) call_user_func( $when_ok, array_reduce(explode("\r\n",$headers),function($a,$v) {
+					if( false !== ($tmp = strpos($v,': ')) )
+						return array_merge($a,array(substr($v,0,$tmp)=>substr($v,$tmp+2)));
+					else
+						return $a;
+				},array()) );
+				return $data;
+			case 404: throw new InconsistencyException($this->uri,'No record was found');
+			case 501: throw new ImplementationException($this->uri);
+			case 400: throw new ProtocolException($this->uri);
+			}
+		}
+	}
 }
