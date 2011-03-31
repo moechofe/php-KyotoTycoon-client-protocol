@@ -1135,7 +1135,7 @@ namespace KyotoTycoon
 			if( ! $max ) unset($max); else $max = (string)$max;
 			return $this->rpc( 'match_prefix', compact('DB','prefix','max'), function($result) use(&$num) {
 				$num = $result['num'];
-				return array_reduce(array_keys($result),function($a,$b)use(&$result){return $b[0]=='_'?array_merge($a,array(substr($b,1))):$a;},array());
+				return array_reduce(array_keys($result),function($a,$b){return $b[0]=='_'?array_merge($a,array(substr($b,1))):$a;},array());
 			}	);
 		}
 
@@ -1162,7 +1162,7 @@ namespace KyotoTycoon
 			if( ! $max ) unset($max); else $max = (string)$max;
 			return $this->rpc( 'match_regex', compact('DB','regex','max'), function($result) use(&$num) {
 				$num = $result['num'];
-				return array_reduce(array_keys($result),function($a,$b)use(&$result){return $b[0]=='_'?array_merge($a,array(substr($b,1))):$a;},array());
+				return array_reduce(array_keys($result),function($a,$b){return $b[0]=='_'?array_merge($a,array(substr($b,1))):$a;},array());
 			}	);
 		}
 
