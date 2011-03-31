@@ -199,19 +199,27 @@ var_dump( $kt-&gt;Japan );</pre></li>
 				<dd><strong>$value</strong>:&nbsp;The value of the record.</dd>
 				</dl>
 			<dt><tt>__isset()</tt></dt>
-			<dd>Used internaly to return if a record exists in the base using the <a href="http://php.net/arrayaccess">ArrayAccess</a> feature.</dd>
+			<dd>Used internaly to return if a record exists in the base using the <a href="http://php.net/language.oop5.magic">Magic Methods</a> feature.</dd>
 			<dd class="api"><em>boolean</em> <strong>$exists</strong> = isset( <em>UI</em>-&gt;<strong><em>key</em></strong> )</dd>
 			<dd><strong><em>key</em></strong>:&nbsp;The <em>key</em> of the record.</dd>
 			<dd><strong>$exists</strong>:&nbsp;<tt>true</tt> if the record exists.</dd>
 			<dt><tt>__unset()</tt></dt>
-			<dd>Used internaly to remove a record using the <a href="http://php.net/arrayaccess">ArrayAccess</a> feature.</dd>
+			<dd>Used internaly to remove a record using the <a href="http://php.net/language.oop5.magic">Magic Methods</a> feature.</dd>
 			<dd class="api">unset( <em>UI</em>-&gt;<strong><em>key</em></strong> )</dd>
 			<dd><strong><em>key</em></strong>:&nbsp;The <em>key</em> of the record.</dd>
 			<dt><tt>__call()</tt></dt>
-			<dd>Used internaly to set a value to a record exists in the base using the <a href="http://php.net/arrayaccess">ArrayAccess</a> feature.</dd>
-			<dd class="api"><em>boolean</em> <strong>$exists</strong> = isset( <em>UI</em>-&gt;<strong><em>key</em></strong> )</dd>
+			<dd>Used internaly to set a value to a record exists in the base using the <a href=http://php.net/language.oop5.magic">Magic Methods</a> feature.</dd>
+			<dd class="api"><em>UI</em> <strong>$kt</strong> = <em>UI</em>-&gt;<strong><em>key</em></strong>( <em>string</em> <strong>$value</strong> )</dd>
 			<dd><strong><em>key</em></strong>:&nbsp;The <em>key</em> of the record.</dd>
-			<dd><strong>$exists</strong>:&nbsp;<tt>true</tt> if the record exists.</dd>
+			<dd><strong>$value</strong>:&nbsp;The value of the record.</dd>
+			<dd><strong>$kt</strong>:&nbsp;The <em>UI</em> object, ready the access records.</dd>
+			<dt><tt>-&gt;get()</tt></dt>
+			<dd>Return the value of a record and optionaly the expiration time.</dd>
+			<dd class="api"><em>string</em> <strong>$value</strong> = <em>UI</em>-&gt;get( <em>string</em> <strong>$key</strong>, [<em>string|null</em> <strong>&amp;$xt</strong> = null] )</dd>
+			<dd><strong>$key</strong>:&nbsp;The key of the record.</dd>
+			<dd>(out) <strong>&$xt</strong>:&nbsp;The expiration time.</dd>
+			<dd><strong>$value</strong>:&nbsp;The value of the record.</dd>
+
 
 		</dl>
 		<script language="javascript">
