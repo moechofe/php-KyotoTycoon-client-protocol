@@ -622,6 +622,18 @@ namespace KyotoTycoon
 		}
 
 		// }}}
+		// {{{ scr()
+
+		function scr( $name, $data = null )
+		{
+			assert('is_string($name)');
+			assert('is_array($data) or is_null($data)');
+			try { return $this->api->play_script($name,$data); }
+			catch( \OutOfBoundsException $e ) { if( $this->outofbound ) throw $e; else return null; }
+			catch( \RuntimeException $e ) { if( $this->runtime ) throw $e; else return false; }
+		}
+
+		// }}}
 		// {{{ offsetExists(), offsetGet(), offsetSet(), offsetUnset()
 
 		function offsetExists( $offset )
@@ -1175,6 +1187,18 @@ namespace KyotoTycoon
 		}
 
 		// }}}
+		// {{{ play_script()
+
+		function play_script( $name, $data = null )
+		{
+			assert('is_string($name)');
+			assert('is_array($data) or is_null($data)');
+			return $this->rpc( 'play_script', array_merge(compact('name'),$data?array_reduce(array_keys($data),function($a,$b)use(&$data){return array_merge($a,array("_$b"=>$data[$b]));},array()):array()), function($result) {
+				return array_reduce(array_keys($result),function($a,$b)use(&$result){return $b[0]=='_'?array_merge($a,array(substr($b,1)=>$data[$b])):$a;},array());
+			}	);
+		}
+
+		// }}}
 		// {{{ remove()
 
 		/**
@@ -1287,8 +1311,9 @@ namespace KyotoTycoon
 				$post = '';
 			unset($data);
 			assert('is_string($post)');
-
+var_dump( $post );
 			curl_setopt_array($this->curl(), array(
+				CURLOPT_VERBOSE => true,
 				CURLOPT_URL => "{$this->uri}/rpc/{$cmd}",
 				CURLOPT_HEADER => false,
 				CURLOPT_POST => true,
