@@ -699,10 +699,10 @@ namespace KyotoTycoon
 		function __construct( $uri = 'http://localhost:1978' )
 		{
 			assert('is_array(parse_url($uri))');
-			$this->uri = $uri;
 			$this->host = parse_url( $uri, PHP_URL_HOST );
 			$this->port = parse_url( $uri, PHP_URL_PORT );
 			$this->base = trim( parse_url( $uri, PHP_URL_PATH ), '/' );
+			$this->uri = "{$this->host}:{$this->port}";
 			$this->use_form_url();
 		}
 
@@ -1194,7 +1194,7 @@ namespace KyotoTycoon
 			assert('is_string($name)');
 			assert('is_array($data) or is_null($data)');
 			return $this->rpc( 'play_script', array_merge(compact('name'),$data?array_reduce(array_keys($data),function($a,$b)use(&$data){return array_merge($a,array("_$b"=>$data[$b]));},array()):array()), function($result) {
-				return array_reduce(array_keys($result),function($a,$b)use(&$result){return $b[0]=='_'?array_merge($a,array(substr($b,1)=>$data[$b])):$a;},array());
+				return array_reduce(array_keys($result),function($a,$b)use(&$result){return $b[0]=='_'?array_merge($a,array(substr($b,1)=>$result[$b])):$a;},array());
 			}	);
 		}
 
@@ -1311,15 +1311,15 @@ namespace KyotoTycoon
 				$post = '';
 			unset($data);
 			assert('is_string($post)');
-var_dump( $post );
+
 			curl_setopt_array($this->curl(), array(
-				CURLOPT_VERBOSE => true,
 				CURLOPT_URL => "{$this->uri}/rpc/{$cmd}",
 				CURLOPT_HEADER => false,
 				CURLOPT_POST => true,
 				CURLOPT_POSTFIELDS => $post ));
 			if( is_string($data = curl_exec($this->curl())) and $data and $data = explode("\n",substr($data,0,-1)) )
-				$data = array_combine(
+
+			$data = array_combine(
 					array_map( function($k) { return substr($k,0,strpos($k,"\t")); }, $data ),
 					array_map( function($v) { return substr($v,strpos($v,"\t")+1); }, $data ) );
 			elseif( $data === false )
