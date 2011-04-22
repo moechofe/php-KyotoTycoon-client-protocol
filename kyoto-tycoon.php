@@ -787,7 +787,7 @@ namespace KyotoTycoon
 			assert('is_string($key)');
 			assert('is_string($value)');
 			assert('is_null($xt) or is_numeric($xt)');
-			if( $this->DB ) $DB = $this->DB;
+			if( $this->base ) $DB = $this->base;
 			if( ! $xt ) unset($xt);
 			return $this->rpc( 'add', compact('DB','key','value','xt'), null );
 		}
@@ -810,7 +810,7 @@ namespace KyotoTycoon
 			assert('is_string($key)');
 			assert('is_string($value)');
 			assert('is_null($xt) or is_numeric($xt)');
-			if( $this->DB ) $DB = $this->DB;
+			if( $this->base ) $DB = $this->base;
 			if( ! $xt ) unset($xt);
 			return $this->rpc( 'append', compact('DB','key','value','xt'), null );
 		}
@@ -837,7 +837,7 @@ namespace KyotoTycoon
 			assert('is_string($oval) or is_null($oval)');
 			assert('is_string($nval) or is_null($nval)');
 			assert('is_null($xt) or is_numeric($xt)');
-			if( $this->DB ) $DB = $this->DB;
+			if( $this->base ) $DB = $this->base;
 			if( ! $xt ) unset($xt);
 			if( ! $oval ) unset($oval);
 			if( ! $nval ) unset($nval);
@@ -853,7 +853,7 @@ namespace KyotoTycoon
 			switch( $property )
 			{
 			case 'clear':
-				if( $this->DB ) $DB = $this->DB;
+				if( $this->base ) $DB = $this->base;
 				return $this->rpc( 'clear', compact('DB'), null );
 			}
 		}
@@ -875,9 +875,10 @@ namespace KyotoTycoon
 		function get( $key, &$xt = null )
 		{
 			assert('is_string($key)');
-			if( $this->DB ) $DB = $this->DB;
+			if( $this->base ) $DB = $this->base;
 			if( ! $xt ) unset($xt);
 			return $this->rpc( 'get', compact('DB','key'), function($result) use(&$xt) {
+				var_dump( 'RESULT', $result );
 				if( isset($result['xt']) ) $xt = $result['xt'];
 				if( isset($result['value']) )
 					return $result['value'];
@@ -989,7 +990,7 @@ namespace KyotoTycoon
 		{
 			assert('is_integer($CUR)');
 			assert('is_string($key) or is_null($key)');
-			if( $this->DB ) $DB = $this->DB;
+			if( $this->base ) $DB = $this->base;
 			if( ! $key ) unset($key);
 			$CUR = (string)$CUR;
 			return $this->rpc( 'cur_jump', compact('DB','CUR','key'), null );
@@ -1013,7 +1014,7 @@ namespace KyotoTycoon
 		{
 			assert('is_integer($CUR)');
 			assert('is_string($key) or is_null($key)');
-			if( $this->DB ) $DB = $this->DB;
+			if( $this->base ) $DB = $this->base;
 			if( ! $key ) unset($key);
 			$CUR = (string)$CUR;
 			return $this->rpc( 'cur_jump_back', compact('DB','CUR','key'), null );
@@ -1096,7 +1097,7 @@ namespace KyotoTycoon
 			assert('is_string($key)');
 			assert('is_numeric($num)');
 			assert('is_null($xt) or is_numeric($xt)');
-			if( $this->DB ) $DB = $this->DB;
+			if( $this->base ) $DB = $this->base;
 			if( ! $xt ) unset($xt);
 			$num = (string)$num;
 			return $this->rpc( 'increment', compact('DB','key','num','xt'), function($result) use(&$xt) {
@@ -1124,7 +1125,7 @@ namespace KyotoTycoon
 			assert('is_string($key)');
 			assert('is_numeric($num)');
 			assert('is_null($xt) or is_numeric($xt)');
-			if( $this->DB ) $DB = $this->DB;
+			if( $this->base ) $DB = $this->base;
 			if( ! $xt ) unset($xt);
 			$num = (string)$num;
 			return $this->rpc( 'increment_double', compact('DB','key','num','xt'), function($result) use(&$xt) {
@@ -1151,7 +1152,7 @@ namespace KyotoTycoon
 		{
 			assert('is_string($prefix)');
 			assert('is_numeric($max) or is_null($max)');
-			if( $this->DB ) $DB = $this->DB;
+			if( $this->base ) $DB = $this->base;
 			if( ! $max ) unset($max); else $max = (string)$max;
 			return $this->rpc( 'match_prefix', compact('DB','prefix','max'), function($result) use(&$num) {
 				$num = $result['num'];
@@ -1178,7 +1179,7 @@ namespace KyotoTycoon
 		{
 			assert('is_string($regex)');
 			assert('is_numeric($max) or is_null($max)');
-			if( $this->DB ) $DB = $this->DB;
+			if( $this->base ) $DB = $this->base;
 			if( ! $max ) unset($max); else $max = (string)$max;
 			return $this->rpc( 'match_regex', compact('DB','regex','max'), function($result) use(&$num) {
 				$num = $result['num'];
@@ -1213,7 +1214,7 @@ namespace KyotoTycoon
 		function remove( $key )
 		{
 			assert('is_string($key)');
-			if( $this->DB ) $DB = $this->DB;
+			if( $this->base ) $DB = $this->base;
 			return $this->rpc( 'remove', compact('DB','key'), null );
 		}
 
@@ -1237,7 +1238,7 @@ namespace KyotoTycoon
 			assert('is_string($key)');
 			assert('is_string($value)');
 			assert('is_null($xt) or is_numeric($xt)');
-			if( $this->DB ) $DB = $this->DB;
+			if( $this->base ) $DB = $this->base;
 			if( ! $xt ) unset($xt);
 			return $this->rpc( 'replace', compact('DB','key','value','xt'), null );
 		}
@@ -1260,7 +1261,7 @@ namespace KyotoTycoon
 			assert('is_string($key)');
 			assert('is_string($value)');
 			assert('is_null($xt) or is_numeric($xt)');
-			if( $this->DB ) $DB = $this->DB;
+			if( $this->base ) $DB = $this->base;
 			if( ! $xt ) unset($xt);
 			return $this->rpc( 'set', compact('DB','key','value','xt'), null );
 		}
@@ -1279,6 +1280,7 @@ namespace KyotoTycoon
 			{
 				$curl = curl_init();
 				curl_setopt_array($curl, array(
+					//CURLOPT_VERBOSE => true,
 					CURLOPT_RETURNTRANSFER => true,
 					CURLOPT_CONNECTTIMEOUT => $this->timeout,
 					CURLOPT_TIMEOUT => $this->keepalive ));
@@ -1332,7 +1334,9 @@ namespace KyotoTycoon
 			case 200:
 				if( $when_ok )
 				{
+					var_dump( $data );
 					$data = call_user_func( $when_ok, $data );
+					var_dump( $cmd, $data );
 			 		assert('is_string($data) or is_array($data) or $data===true');
 					return $data;
 				}
@@ -1354,7 +1358,6 @@ namespace KyotoTycoon
 			assert('is_null($when_ok) or $when_ok instanceof Closure');
 
 			curl_setopt_array($this->curl(), array(
-				CURLOPT_VERBOSE => true,
 				CURLOPT_HEADER => true,
 				CURLOPT_URL => "{$this->uri}/".urlencode($key),
 				$cmd=='HEAD' ? CURLOPT_NOBODY : CURLOPT_POST => $cmd=='HEAD' ? true : false ));
