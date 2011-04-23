@@ -878,10 +878,9 @@ namespace KyotoTycoon
 			if( $this->base ) $DB = $this->base;
 			if( ! $xt ) unset($xt);
 			return $this->rpc( 'get', compact('DB','key'), function($result) use(&$xt) {
-				var_dump( 'RESULT', $result );
 				if( isset($result['xt']) ) $xt = $result['xt'];
 				if( isset($result['value']) )
-					return $result['value'];
+					return $result['value']?$result['value']:"";
 				elseif( isset($result['dmFsdWU=']) )
 					return base64_decode($result['dmFsdWU=']);
 				else
@@ -1334,9 +1333,7 @@ namespace KyotoTycoon
 			case 200:
 				if( $when_ok )
 				{
-					var_dump( $data );
 					$data = call_user_func( $when_ok, $data );
-					var_dump( $cmd, $data );
 			 		assert('is_string($data) or is_array($data) or $data===true');
 					return $data;
 				}
