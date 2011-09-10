@@ -7,11 +7,11 @@
 require_once 'zimple-test.php';
 require_once 'kyoto-tycoon.php';
 
-define('server_uri','http://martibox:1978');
+define('server_uri','http://localhost:1978');
 
 skip_ok();
 
-test(/*
+test(
 	// {{{ Test simple operations
 
 	'Test simple operations: get,set,clear,replace,add,append,remove', function()
@@ -40,7 +40,7 @@ test(/*
 
 	'Test sequence operations: increment, increment_double', function()
 	{
-		plan(7);
+		plan(8);
 		$kt = new KyotoTycoon\API(server_uri);
 		ok( $kt->clear );
 		is( $kt->increment('i'), 1 );
@@ -48,7 +48,8 @@ test(/*
 		is( $kt->increment('i',-1), 1 );
 		is( $kt->increment('i','-1'), 0 );
 		is( $kt->increment('i','-2'), -2 );
-		ok( $kt->set('i','one') );
+		ok( $kt->set('i','1') );
+		except( function()use($kt){ $kt->increment('i',1); }, '\KyotoTycoon\InconsistencyException' );
 	},
 
 	// }}}
@@ -164,7 +165,7 @@ test(/*
 	'Test fluent and quick interface', function()
 	{
 		plan(52);
-		$kt = kt(server_uri);
+		$kt = KyotoTycoon\UI(server_uri)->outofbound_return_null;
 		isnull( $kt->clear->c );
 		ok( $kt->a('ananas') );
 		ok( $kt->bat('battle') );
@@ -223,7 +224,7 @@ test(/*
 	'Test ArrayAccess', function()
 	{
 		plan(6);
-		$kt = kt(server_uri);
+		$kt = KyotoTycoon\UI(server_uri);
 		ok( $kt->clear );
 		$kt['a'] = 'ananas';
 		$kt['b'] = 'banana';
@@ -237,10 +238,11 @@ test(/*
 	},
 
 	// }}}
-*/
+
 	'Test REST procedures', function()
 	{
 		$kt = new KyotoTycoon\API(server_uri);
+		plan(2);
 		ok( $kt->set( 'japan', 'tokyo' ) );
 		is( $kt->getful('japan'), 'tokyo' );
 	}
