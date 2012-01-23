@@ -1,14 +1,12 @@
 <?php
 /**
- * API to communicate with a Kyoto Tycoon server.
- * Author: martin mauchauffee
+ * Implementation of the Kyoto Tycoon Protocols (RPC and REST).
+ * Author: martin mauchauffée
  * Link: http://github.com/moechofe/phpkyototycoon
- * Date: March 2011
+ * Date: January 2012
  * Requirement: PHP 5.3+
  */
-
-namespace KyotoTycoon
-{
+namespace qad\kyoto;
 use Iterator, ArrayAccess, DomainException, OutOfBoundsException, RuntimeException, LogicException;
 
 /**
@@ -45,7 +43,7 @@ use Iterator, ArrayAccess, DomainException, OutOfBoundsException, RuntimeExcepti
  * foreach( $kt->prefix('prefix_') as $key )
  *   var_dump( $key );
  * // Keys matchs a regular expression
- * foreach( $kt->match('.*_match_.*') as $key )
+ * foreach( $kt->search('.*_match_.*') as $key )
  *   var_dump( $key );
  * ----
  * Browsing records
@@ -136,6 +134,7 @@ final class UI implements Iterator, ArrayAccess
 
 	// The API object used to send command.
 	private $api = null;
+	function api() { return $this->api; }
 
 	// Indicate if OutOfBoundsException should be throw instead of returning null.
 	private $outofbound = true;
@@ -453,6 +452,19 @@ final class UI implements Iterator, ArrayAccess
 		assert('is_numeric($max) and $max>=0 and (int)$max==$max');
 		$stm = clone $this;
 		$stm->prefix = $prefix;
+		$stm->backward = false;
+		$stm->max = $max;
+		$stm->num = &$num;
+		return $stm;
+	}
+
+	function reverse_begin( $prefix, $max = 0, &$num = null )
+	{
+		assert('is_string($prefix)');
+		assert('is_numeric($max) and $max>=0 and (int)$max==$max');
+		$stm = clone $this;
+		$stm->prefix = $prefix;
+		$stm->backward = true;
 		$stm->max = $max;
 		$stm->num = &$num;
 		return $stm;
@@ -464,26 +476,42 @@ final class UI implements Iterator, ArrayAccess
 		assert('is_numeric($max) and $max>=0 and (int)$max==$max');
 		$stm = clone $this;
 		$stm->regex = $regex;
+		$stm->backward = false;
 		$stm->max = $max;
 		$stm->num = &$num;
 		return $stm;
 	}
 
-	function forward( $key = null )
+	function reverse_search( $regex, $max = 0, &$num = null )
 	{
-		assert('is_string($key) or is_null($key)');
+		assert('is_string($regex)');
+		assert('is_numeric($max) and $max>=0 and (int)$max==$max');
 		$stm = clone $this;
-		$stm->startkey = $key;
-		$stm->backward = false;
+		$stm->regex = $regex;
+		$stm->backward = true;
+		$stm->max = $max;
+		$stm->num = &$num;
 		return $stm;
 	}
 
-	function backward( $key = null )
+	function forward( $key = null, $only_keys = false )
+	{
+		assert('is_string($key) or is_null($key)');
+		assert('is_bool($only_keys)');
+		$stm = clone $this;
+		$stm->startkey = $key;
+		$stm->backward = false;
+		$stm->just_key = $only_keys;
+		return $stm;
+	}
+
+	function backward( $key = null, $only_keys = false )
 	{
 		assert('is_string($key) or is_null($key)');
 		$stm = clone $this;
 		$stm->startkey = $key;
 		$stm->backward = true;
+		$stm->just_key = $only_keys;
 		return $stm;
 	}
 
@@ -521,10 +549,14 @@ final class UI implements Iterator, ArrayAccess
 	{
 		// If prefix is set, then retrieve the list of keys begin with this prefix.
 		if( ! is_null($this->prefix) )
-			$this->keys = $this->api->match_prefix( $this->prefix, $this->max, $this->num );
+			$this->keys = $this->backward
+				? array_reverse( $this->api->match_prefix( $this->prefix, $this->max, $this->num ) )
+				: $this->api->match_prefix( $this->prefix, $this->max, $this->num );
 		// Else, if regex is set, then retrieve the list of keys that match this regex.
 		elseif( ! is_null($this->regex) )
-			$this->keys = $this->api->match_regex( $this->regex, $this->max, $this->num );
+			$this->keys = $this->backward
+				? array_reverse( $this->api->match_regex( $this->regex, $this->max, $this->num ) )
+				: $this->api->match_regex( $this->regex, $this->max, $this->num );
 		// Else, the cursor will be use
 		else
 		{
@@ -605,7 +637,12 @@ final class UI implements Iterator, ArrayAccess
 		}
 		elseif( ! is_null($this->cursor) )
 		{
-			try { $this->record = $this->api->cur_get($this->cursor,false); return $this->record; }
+			try {
+				if( $this->just_key )
+					return $this->record = array( $this->api->cur_get_key($this->cursor,false) );
+				else
+					return $this->record = $this->api->cur_get($this->cursor,false);
+			}
 			catch( OutOfBoundsException $e ) { return false; }
 		}
 		else
@@ -692,15 +729,19 @@ final class API
 
 	// Contain all connection parameters in one URI.
 	private $uri = null;
+	function uri() { return $this->uri; }
 
 	// The hostname or the IP of the server.
 	private $host = null;
+	function host() { return $this->host; }
 
 	// The port of the server.
 	private $port = null;
+	function port() { return $this->port; }
 
 	// The name or the ID of the database.
 	private $base = null;
+	function base() { return $this->base; }
 
 	private $encode = null;
 
@@ -965,12 +1006,10 @@ final class API
 		if( $this->base ) $DB = $this->base;
 		if( ! $xt ) unset($xt); else $xt = (string)$xt;
 		return $this->rpc( 'get', compact('DB','key'), function($result) use(&$xt) {
-			//var_dump( $result );
 			if( isset($result['xt']) ) $xt = $result['xt'];
 			if( isset($result['value']) )
-				return $result['value']?$result['value']:"";
-			//elseif( isset($result['dmFsdWU=']) )
-			//	return base64_decode($result['dmFsdWU=']);
+//	fixme: delete me			return $result['value']?$result['value']:"";
+				return $result['value'];
 			else
 				throw ProtocolException( $this->url );
 		} );
@@ -1390,6 +1429,8 @@ final class API
 	{
 		static $encode = null; if( is_null($encode) ) $encode = &$this->encode;
 		assert('in_array($cmd,array("add","append","cas","clear","cur_delete","cur_get","cur_get_key","cur_get_value","cur_jump","cur_jump_back","cur_set_value","cur_step","cur_step_back","cur_remove","echo","get","get_bulk","increment","increment_double","match_prefix","match_regex","play_script","remove","remove_bulk","replace","report","set","set_bulk","status","synchronize","tune_replication","vacuum"))');
+		assert('is_null($data) or is_array($data)');
+		assert('!$data or array_walk($data,function($v,$k){assert(\'is_string($k)\');assert(\'is_string($v)\');})');
 		assert('is_null($data) or count($data)==count(array_filter(array_keys($data),"is_string"))');
 		assert('is_null($data) or count($data)==count(array_filter($data,"is_string"))');
 		assert('is_callable($when_ok) or is_null($when_ok)');
@@ -1406,7 +1447,7 @@ final class API
 			CURLOPT_HEADER => false,
 			CURLOPT_POST => true,
 			CURLOPT_POSTFIELDS => $post ));
-		if( is_string($d=$data = curl_exec($this->curl())) and $data ) switch( curl_getinfo($this->curl(),CURLINFO_CONTENT_TYPE) )
+		if( is_string($data = curl_exec($this->curl())) and $data ) switch( curl_getinfo($this->curl(),CURLINFO_CONTENT_TYPE) )
 		{
 		case 'text/tab-separated-values':
 			$data = self::decode_tab($data); break;
@@ -1420,16 +1461,7 @@ final class API
 			throw new ConnectionException($this->uri, curl_error($this->curl()));
 		else
 			$data = array();
-		/*var_dump(
-			//curl_getinfo($this->curl()),
-			'data:',$d,
-			'auto:',$data,
-			//base64_decode(substr($d,9)),
-			//substr(base64_decode(substr($d,9)),8),
-			'unpack:',@unpack('C*result',substr(base64_decode(substr($d,9)),8)),
-			//implode('',unpack('C*',base64_decode(substr($d,9))))
-			'end'
-		);*/
+
 		switch( curl_getinfo($this->curl(),CURLINFO_HTTP_CODE) )
 		{
 		case 200:
@@ -1488,4 +1520,4 @@ final class API
 		}
 	}
 }
-}
+
