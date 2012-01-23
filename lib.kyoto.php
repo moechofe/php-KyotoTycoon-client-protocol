@@ -285,8 +285,6 @@ final class UI implements Iterator, ArrayAccess
 	 * Retrieve the expiration time of a record.
 	 * Params:
 	 *	 string $key = The key of the record.
-	 *	 (out) integer $xt = The absolute expiration time.
-	 *	 (out) null $xt = There is no expiration time.
 	 * Return:
 	 *	 string = The value of the expiration time.
 	 *	 null = If the record do not exists.
@@ -1011,7 +1009,7 @@ final class API
 //	fixme: delete me			return $result['value']?$result['value']:"";
 				return $result['value'];
 			else
-				throw ProtocolException( $this->url );
+				throw new ProtocolException( $this->url );
 		} );
 	}
 	function getful( $key, &$xt = null, &$time = null )
