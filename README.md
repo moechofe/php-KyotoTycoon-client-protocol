@@ -7,11 +7,14 @@ Short example using the UI:
 
 ```php
 <?php
+namespace app;
+use qad\kyoto;
+
 // Start a server with the command line: ktserver
-require_once 'kyoto-tycoon.php';
+require_once 'lib.kyoto.php';
 
 // Get an UI object and clear the database
-$kt = kt()->clear;
+$kt = kyoto\UI()->clear;
 
 // Setting records
 $kt['日本'] = '東京';
