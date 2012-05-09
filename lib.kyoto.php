@@ -720,7 +720,7 @@ final class UI implements Iterator, ArrayAccess
  */
 final class API
 {
-	// {{{ $keepalive, $timeout, $uri, $host, $post, $base, $encode, __construct()
+	// {{{ $keepalive, $timeout, $uri, $host, $post, $base, $encode, connect_to(), __construct()
 
 	private $keepalive = 30;
 	private $timeout = 3;

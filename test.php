@@ -1,250 +1,251 @@
 <?php
-
 /**
  * Start a Kyoto Tycoon server with a TreeDB: ktserver +
  */
 
-require_once 'zimple-test.php';
-require_once 'kyoto-tycoon.php';
+require_once 'lib.test.php';
+require_once 'lib.kyoto.php';
 
 define('server_uri','http://localhost:1978');
 
-skip_ok();
+qad\test\diag('Start the kyoto-tycoon server with "ktserver +"');
 
-test(
-	// {{{ Test simple operations
+qad\test\skip_ok();
+
+qad\test\test(
+	// {{{ qad\test simple operations
 
 	'Test simple operations: get,set,clear,replace,add,append,remove', function()
 	{
-		plan(15);
-		$kt = new KyotoTycoon\API(server_uri);
-		ok( $kt->clear );
-		except( function()use($kt){$kt->replace('a','academy');}, 'OutOfBoundsException' );
-		except( function()use($kt){$kt->get('a');}, 'OutOfBoundsException' );
-		except( function()use($kt){$kt->remove('a');}, 'OutOfBoundsException' );
-		ok( $kt->add('a', 'alien') );
-		is( $kt->get('a'), 'alien' );
-		ok( $kt->set('a', 'ananas') );
-		is( $kt->get('a'), 'ananas' );
-		ok( $kt->replace('a', 'akira') );
-		is( $kt->get('a'), 'akira');
-		except( function()use($kt){$kt->add('a', 'aligator');}, 'OutOfBoundsException' );
-		is( $kt->get('a'), 'akira' );
-		ok( $kt->append('a', ' kurozawa') );
-		is( $kt->get('a'), 'akira kurozawa' );
-		ok( $kt->remove('a') );
+		qad\test\plan(15);
+		$kt = new qad\kyoto\API(server_uri);
+		qad\test\ok( $kt->clear );
+		qad\test\except( function()use($kt){$kt->replace('a','academy');}, 'qad\kyoto\InconsistencyException' );
+		qad\test\except( function()use($kt){$kt->get('a');}, 'qad\kyoto\InconsistencyException' );
+		qad\test\except( function()use($kt){$kt->remove('a');}, 'qad\kyoto\InconsistencyException' );
+		qad\test\ok( $kt->add('a', 'alien') );
+		qad\test\is( $kt->get('a'), 'alien' );
+		qad\test\ok( $kt->set('a', 'ananas') );
+		qad\test\is( $kt->get('a'), 'ananas' );
+		qad\test\ok( $kt->replace('a', 'akira') );
+		qad\test\is( $kt->get('a'), 'akira');
+		qad\test\except( function()use($kt){$kt->add('a', 'aligator');}, 'qad\kyoto\InconsistencyException' );
+		qad\test\is( $kt->get('a'), 'akira' );
+		qad\test\ok( $kt->append('a', ' kurozawa') );
+		qad\test\is( $kt->get('a'), 'akira kurozawa' );
+		qad\test\ok( $kt->remove('a') );
 	},
 
 	// }}}
-	// {{{ Test sequence operations
+	// {{{ qad\test sequence operations
 
 	'Test sequence operations: increment, increment_double', function()
 	{
-		plan(8);
-		$kt = new KyotoTycoon\API(server_uri);
-		ok( $kt->clear );
-		is( $kt->increment('i'), 1 );
-		is( $kt->increment('i',1), 2 );
-		is( $kt->increment('i',-1), 1 );
-		is( $kt->increment('i','-1'), 0 );
-		is( $kt->increment('i','-2'), -2 );
-		ok( $kt->set('i','1') );
-		except( function()use($kt){ $kt->increment('i',1); }, '\KyotoTycoon\InconsistencyException' );
+		qad\test\plan(8);
+		$kt = new qad\kyoto\API(server_uri);
+		qad\test\ok( $kt->clear );
+		qad\test\is( $kt->increment('i'), 1 );
+		qad\test\is( $kt->increment('i',1), 2 );
+		qad\test\is( $kt->increment('i',-1), 1 );
+		qad\test\is( $kt->increment('i','-1'), 0 );
+		qad\test\is( $kt->increment('i','-2'), -2 );
+		qad\test\ok( $kt->set('i','1') );
+		qad\test\except( function()use($kt){ $kt->increment('i',1); }, '\qad\kyoto\InconsistencyException' );
 	},
 
 	// }}}
-	// {{{ Test cas command
+	// {{{ qad\test cas command
 
 	'Test cas command', function()
 	{
-		plan(11);
-		$kt = new KyotoTycoon\API(server_uri);
-		ok( $kt->clear );
-		except( function()use($kt){$kt->cas('b','bottle','battle');}, 'OutOfBoundsException' );
-		ok( $kt->set('b','banana') );
-		except( function()use($kt){$kt->cas('b','bottle','battle');}, 'OutOfBoundsException' );
-		ok( $kt->set('b','bottle') );
-		ok( $kt->cas('b','bottle','battle') );
-		is( $kt->get('b'), 'battle' );
-		ok( $kt->cas('b','battle',null) );
-		except( function()use($kt){$kt->get('b');}, 'OutOfBoundsException' );
-		ok( $kt->cas('b',null,'battle') );
-		is( $kt->get('b'), 'battle' );
+		qad\test\plan(11);
+		$kt = new qad\kyoto\API(server_uri);
+		qad\test\ok( $kt->clear );
+		qad\test\except( function()use($kt){$kt->cas('b','bottle','battle');}, 'qad\kyoto\InconsistencyException' );
+		qad\test\ok( $kt->set('b','banana') );
+		qad\test\except( function()use($kt){$kt->cas('b','bottle','battle');}, 'qad\kyoto\InconsistencyException' );
+		qad\test\ok( $kt->set('b','bottle') );
+		qad\test\ok( $kt->cas('b','bottle','battle') );
+		qad\test\is( $kt->get('b'), 'battle' );
+		qad\test\ok( $kt->cas('b','battle',null) );
+		qad\test\except( function()use($kt){$kt->get('b');}, 'qad\kyoto\InconsistencyException' );
+		qad\test\ok( $kt->cas('b',null,'battle') );
+		qad\test\is( $kt->get('b'), 'battle' );
 	},
 
 	// }}}
-	// {{{ Test match_prefix and match_regex
+	// {{{ qad\test match_prefix and match_regex
 
 	'Test match_prefix and match_regex', function()
 	{
-		plan(17);
-		$kt = new KyotoTycoon\API(server_uri);
-		ok( $kt->clear );
-		ok( $kt->set('a.b.c','ananas,banana,citrus') );
-		ok( $kt->set('a.c.b','ananas,citrus,banana') );
-		ok( $kt->set('b.c.a','banana,citrus,ananas') );
-		ok( $kt->set('b.a.c','banana,ananas,citrus') );
-		isanarray( $r=$kt->match_prefix('a.') );
-		has( $r, 2 );
-		ok( false!==array_search('a.b.c', $r) );
-		ok( false!==array_search('a.c.b', $r) );
-		isanarray( $r=$kt->match_prefix('b.') );
-		has( $r, 2 );
-		ok( false!==array_search('b.a.c', $r) );
-		ok( false!==array_search('b.c.a', $r) );
-		isanarray( $r=$kt->match_regex('\w\.c\.\w') );
-		has( $r, 2 );
-		ok( false!==array_search('a.c.b', $r) );
-		ok( false!==array_search('b.c.a', $r) );
+		qad\test\plan(17);
+		$kt = new qad\kyoto\API(server_uri);
+		qad\test\ok( $kt->clear );
+		qad\test\ok( $kt->set('a.b.c','ananas,banana,citrus') );
+		qad\test\ok( $kt->set('a.c.b','ananas,citrus,banana') );
+		qad\test\ok( $kt->set('b.c.a','banana,citrus,ananas') );
+		qad\test\ok( $kt->set('b.a.c','banana,ananas,citrus') );
+		qad\test\isanarray( $r=$kt->match_prefix('a.') );
+		qad\test\has( $r, 2 );
+		qad\test\ok( false!==array_search('a.b.c', $r) );
+		qad\test\ok( false!==array_search('a.c.b', $r) );
+		qad\test\isanarray( $r=$kt->match_prefix('b.') );
+		qad\test\has( $r, 2 );
+		qad\test\ok( false!==array_search('b.a.c', $r) );
+		qad\test\ok( false!==array_search('b.c.a', $r) );
+		qad\test\isanarray( $r=$kt->match_regex('\w\.c\.\w') );
+		qad\test\has( $r, 2 );
+		qad\test\ok( false!==array_search('a.c.b', $r) );
+		qad\test\ok( false!==array_search('b.c.a', $r) );
 	},
 
 	// }}}
-	// {{{ Test cursor functions
+	// {{{ qad\test cursor functions
 
 	'Test cursor functions: cur_jump, cur_step, cur_set_value, cur_remove, cur_get_key, cur_get_value, cur_get', function()
 	{
-		$kt = new KyotoTycoon\API(server_uri);
+		$kt = new qad\kyoto\API(server_uri);
 
-		plan(4);
-		ok( $kt->clear );
-		ok( $kt->set('a','ananas') );
-		ok( $kt->set('b','banana') );
-		ok( $kt->set('c','citrus') );
+		qad\test\plan(4);
+		qad\test\ok( $kt->clear );
+		qad\test\ok( $kt->set('a','ananas') );
+		qad\test\ok( $kt->set('b','banana') );
+		qad\test\ok( $kt->set('c','citrus') );
 
-		plan(5);
-		ok( $kt->cur_jump(1) );
-		is( $kt->cur_get(1), array('a'=>'ananas') );
-		is( $kt->cur_get(1), array('b'=>'banana') );
-		is( $kt->cur_get(1), array('c'=>'citrus') );
-		except( function()use($kt){$kt->cur_get(1);}, 'OutOfBoundsException' );
+		qad\test\plan(5);
+		qad\test\ok( $kt->cur_jump(1) );
+		qad\test\is( $kt->cur_get(1), array('a'=>'ananas') );
+		qad\test\is( $kt->cur_get(1), array('b'=>'banana') );
+		qad\test\is( $kt->cur_get(1), array('c'=>'citrus') );
+		qad\test\except( function()use($kt){$kt->cur_get(1);}, 'qad\kyoto\InconsistencyException' );
 
-		plan(7);
-		ok( $kt->cur_jump(1) );
-		is( $kt->cur_get(1,false), array('a'=>'ananas') );
-		ok( $kt->cur_step(1) );
-		is( $kt->cur_get(1,false), array('b'=>'banana') );
-		ok( $kt->cur_step(1) );
-		is( $kt->cur_get(1,false), array('c'=>'citrus') );
-		except( function()use($kt){$kt->cur_step(1);}, 'OutOfBoundsException' );
+		qad\test\plan(7);
+		qad\test\ok( $kt->cur_jump(1) );
+		qad\test\is( $kt->cur_get(1,false), array('a'=>'ananas') );
+		qad\test\ok( $kt->cur_step(1) );
+		qad\test\is( $kt->cur_get(1,false), array('b'=>'banana') );
+		qad\test\ok( $kt->cur_step(1) );
+		qad\test\is( $kt->cur_get(1,false), array('c'=>'citrus') );
+		qad\test\except( function()use($kt){$kt->cur_step(1);}, 'qad\kyoto\InconsistencyException' );
 
-		plan(17);
-		ok( $kt->cur_jump(1) );
-		is( $kt->cur_get_key(1,false), 'a' );
-		is( $kt->cur_get_value(1,true), 'ananas' );
-		is( $kt->cur_get_key(1,false), 'b' );
-		is( $kt->cur_get_value(1,true), 'banana' );
-		is( $kt->cur_get_key(1,false), 'c' );
-		is( $kt->cur_get_value(1,true), 'citrus' );
-		ok( $kt->cur_step_back(1) );
-		is( $kt->cur_get_key(1,false), 'c' );
-		is( $kt->cur_get_value(1,false), 'citrus' );
-		ok( $kt->cur_step_back(1) );
-		is( $kt->cur_get_key(1,false), 'b' );
-		is( $kt->cur_get_value(1,false), 'banana' );
-		ok( $kt->cur_step_back(1) );
-		is( $kt->cur_get_key(1,false), 'a' );
-		is( $kt->cur_get_value(1,false), 'ananas' );
-		except( function()use($kt){$kt->cur_step_back(1);}, 'OutOfBoundsException' );
+		qad\test\plan(17);
+		qad\test\ok( $kt->cur_jump(1) );
+		qad\test\is( $kt->cur_get_key(1,false), 'a' );
+		qad\test\is( $kt->cur_get_value(1,true), 'ananas' );
+		qad\test\is( $kt->cur_get_key(1,false), 'b' );
+		qad\test\is( $kt->cur_get_value(1,true), 'banana' );
+		qad\test\is( $kt->cur_get_key(1,false), 'c' );
+		qad\test\is( $kt->cur_get_value(1,true), 'citrus' );
+		qad\test\ok( $kt->cur_step_back(1) );
+		qad\test\is( $kt->cur_get_key(1,false), 'c' );
+		qad\test\is( $kt->cur_get_value(1,false), 'citrus' );
+		qad\test\ok( $kt->cur_step_back(1) );
+		qad\test\is( $kt->cur_get_key(1,false), 'b' );
+		qad\test\is( $kt->cur_get_value(1,false), 'banana' );
+		qad\test\ok( $kt->cur_step_back(1) );
+		qad\test\is( $kt->cur_get_key(1,false), 'a' );
+		qad\test\is( $kt->cur_get_value(1,false), 'ananas' );
+		qad\test\except( function()use($kt){$kt->cur_step_back(1);}, 'qad\kyoto\InconsistencyException' );
 
-		plan(10);
-		ok( $kt->cur_jump_back(1) );
-		is( $kt->cur_get(1,false), array('c'=>'citrus') );
-		ok( $kt->cur_remove(1) );
-		ok( $kt->cur_step_back(1) );
-		is( $kt->cur_get(1,false), array('b'=>'banana') );
-		ok( $kt->cur_remove(1) );
-		ok( $kt->cur_step_back(1) );
-		is( $kt->cur_get(1,false), array('a'=>'ananas') );
-		ok( $kt->cur_remove(1) );
-		except( function()use($kt){$kt->cur_step_back(1);}, 'OutOfBoundsException' );
+		qad\test\plan(10);
+		qad\test\ok( $kt->cur_jump_back(1) );
+		qad\test\is( $kt->cur_get(1,false), array('c'=>'citrus') );
+		qad\test\ok( $kt->cur_remove(1) );
+		qad\test\ok( $kt->cur_step_back(1) );
+		qad\test\is( $kt->cur_get(1,false), array('b'=>'banana') );
+		qad\test\ok( $kt->cur_remove(1) );
+		qad\test\ok( $kt->cur_step_back(1) );
+		qad\test\is( $kt->cur_get(1,false), array('a'=>'ananas') );
+		qad\test\ok( $kt->cur_remove(1) );
+		qad\test\except( function()use($kt){$kt->cur_step_back(1);}, 'qad\kyoto\InconsistencyException' );
 	},
 
 	// }}}
-	// {{{ Test fluent and quick interface
+	// {{{ qad\test fluent and quick interface
 
 	'Test fluent and quick interface', function()
 	{
-		plan(52);
-		$kt = KyotoTycoon\UI(server_uri)->outofbound_return_null;
-		isnull( $kt->clear->c );
-		ok( $kt->a('ananas') );
-		ok( $kt->bat('battle') );
-		ok( $kt->ban('banana') );
-		ok( $kt->c('citrus') );
-		is( $kt->a, 'ananas' );
-		is( $kt->ban, 'banana' );
-		is( $kt->bat, 'battle' );
-		is( $kt->c, 'citrus' );
+		qad\test\plan(52);
+		$kt = qad\kyoto\UI(server_uri)->outofbound_return_null;
+		qad\test\isnull( $kt->clear->c );
+		qad\test\ok( $kt->a('ananas') );
+		qad\test\ok( $kt->bat('battle') );
+		qad\test\ok( $kt->ban('banana') );
+		qad\test\ok( $kt->c('citrus') );
+		qad\test\is( $kt->a, 'ananas' );
+		qad\test\is( $kt->ban, 'banana' );
+		qad\test\is( $kt->bat, 'battle' );
+		qad\test\is( $kt->c, 'citrus' );
 		$a = array('ban'=>'banana','bat'=>'battle');
 		foreach( $kt->begin('ba') as $k => $v )
-		{ is( $k, key($a) ); is( $v, current($a) ); next($a); }
+		{ qad\test\is( $k, key($a) ); qad\test\is( $v, current($a) ); next($a); }
 		$a = array('a'=>'ananas','ban'=>'banana','bat'=>'battle');
 		foreach( $kt->search('.*a.*') as $k => $v )
-		{ is( $k, key($a) ); is( $v, current($a) ); next($a); }
+		{ qad\test\is( $k, key($a) ); qad\test\is( $v, current($a) ); next($a); }
 		$a = array('ban'=>'banana','bat'=>'battle');
 		foreach( $kt->prefix('ba') as $k )
-		{ is( $k, key($a) ); next($a); }
+		{ qad\test\is( $k, key($a) ); next($a); }
 		$a = array('a'=>'ananas','ban'=>'banana','bat'=>'battle');
 		foreach( $kt->regex('.*a.*') as $k )
-		{ is( $k, key($a) ); next($a); }
-		ok( isset($kt->c) );
+		{ qad\test\is( $k, key($a) ); next($a); }
+		qad\test\ok( isset($kt->c) );
 		unset( $kt->c );
-		isnull( $kt->c );
-		notok( isset($kt->c) );
+		qad\test\isnull( $kt->c );
+		qad\test\notok( isset($kt->c) );
 		$a = array('ban'=>'banana','bat'=>'battle');
 		foreach( $kt->forward('ban') as $k => $v )
-		{ is( $k, key($a) ); is( $v, current($a) ); next($a); }
+		{ qad\test\is( $k, key($a) ); qad\test\is( $v, current($a) ); next($a); }
 		$a = array('ban'=>'banana','a'=>'ananas');
 		foreach( $kt->backward('ban') as $k => $v )
-		{ is( $k, key($a) ); is( $v, current($a) ); next($a); }
-		is( $kt->inc('i'), 1 );
-		is( $kt->inc('i',2), 3 );
-		is( $kt->inc('f',0.1), 0.1 );
-		is( $kt->inc('f',0.2), 0.3 );
-		ok( $kt->set('a','akira') );
-		ok( $kt->cat('a',' kurozawa') );
-		is( $kt->get('a'), 'akira kurozawa' );
-		notok( $kt->add('a','alien') );
-		ok( $kt->rep('a','alien') );
-		ok( $kt->del('a') );
-		notok( $kt->del('a') );
-		notok( $kt->rep('a','alien') );
-		ok( $kt->add('a','alien') );
-		notok( $kt->cas('a','ananas','akira') );
-		ok( $kt->cas('a','alien','akira') );
+		{ qad\test\is( $k, key($a) ); qad\test\is( $v, current($a) ); next($a); }
+		qad\test\is( $kt->inc('i'), 1 );
+		qad\test\is( $kt->inc('i',2), 3 );
+		qad\test\is( $kt->inc('f',0.1), 0.1 );
+		qad\test\is( $kt->inc('f',0.2), 0.3 );
+		qad\test\ok( $kt->set('a','akira') );
+		qad\test\ok( $kt->cat('a',' kurozawa') );
+		qad\test\is( $kt->get('a'), 'akira kurozawa' );
+		qad\test\notok( $kt->add('a','alien') );
+		qad\test\ok( $kt->rep('a','alien') );
+		qad\test\ok( $kt->del('a') );
+		qad\test\notok( $kt->del('a') );
+		qad\test\notok( $kt->rep('a','alien') );
+		qad\test\ok( $kt->add('a','alien') );
+		qad\test\notok( $kt->cas('a','ananas','akira') );
+		qad\test\ok( $kt->cas('a','alien','akira') );
 		$a = null;
 		$c = 'citrus';
-		truly( $kt->to('a',$a)->from('c',$c), $kt );
-		is( $kt->c, $c );
+		qad\test\truly( $kt->to('a',$a)->from('c',$c), $kt );
+		qad\test\is( $kt->c, $c );
 	},
 
 	// }}}
-	// {{{ Test ArrayAccess
+	// {{{ qad\test ArrayAccess
 
 	'Test ArrayAccess', function()
 	{
-		plan(6);
-		$kt = KyotoTycoon\UI(server_uri);
-		ok( $kt->clear );
+		qad\test\plan(6);
+		$kt = qad\kyoto\UI(server_uri);
+		qad\test\ok( $kt->clear );
 		$kt['a'] = 'ananas';
 		$kt['b'] = 'banana';
 		$kt['c'] = 'citrus';
-		is( $kt['a'], 'ananas' );
-		is( $kt['b'], 'banana' );
-		is( $kt['c'], 'citrus' );
-		ok( isset($kt['a']) );
+		qad\test\is( $kt['a'], 'ananas' );
+		qad\test\is( $kt['b'], 'banana' );
+		qad\test\is( $kt['c'], 'citrus' );
+		qad\test\ok( isset($kt['a']) );
 		unset($kt['a']);
-		notok( isset($kt['a']) );
+		qad\test\notok( isset($kt['a']) );
 	},
 
 	// }}}
 
 	'Test REST procedures', function()
 	{
-		$kt = new KyotoTycoon\API(server_uri);
-		plan(2);
-		ok( $kt->set( 'japan', 'tokyo' ) );
-		is( $kt->getful('japan'), 'tokyo' );
+		$kt = new qad\kyoto\API(server_uri);
+		qad\test\plan(2);
+		qad\test\ok( $kt->set( 'japan', 'tokyo' ) );
+		qad\test\is( $kt->getful('japan'), 'tokyo' );
 	}
 
 );
