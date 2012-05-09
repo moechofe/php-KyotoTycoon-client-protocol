@@ -35,5 +35,5 @@ foreach( $kt->forward() as $k => $v )
 
 Read the partial [documentation](./wiki) to learn how to use it.
 
-Look at the [`test.php` script](./blob/master/test.php) for more examples.
+Look at the [`test.php` script](blob/master/test.php) for more examples.
 
